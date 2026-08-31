@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Iniciar Sesión</title>
+    <!-- Enlace a tu archivo de estilos -->
+    <link rel="stylesheet" href="stylesheet.css">
+    <!-- FontAwesome para el ícono del ojo en la contraseña -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Fondo superior amarillo con la mascota -->
+        <div class="top-section">
+            <div class="mascot-wrapper">
+                <!-- Reemplaza con la ruta de tu imagen de coco/mascota -->
+                <img src="assets/imagenes/coco/mascota.png" alt="Mascota NicaLingo" class="mascot-img">
+            </div>
+            <h2 class="welcome-text">Bienvenido de vuelta</h2>
+        </div>
+
+        <!-- Contenedor inferior azul con curva -->
+        <div class="bottom-section">
+            <h3 class="form-title">Inicia sesión</h3>
+
+            <form id="loginForm">
+                <!-- Input de correo -->
+                <div class="input-group">
+                    <input type="email" id="email" placeholder="correoelectronico@gmail.com" required>
+                </div>
+
+                <!-- Input de contraseña con botón de mostrar/ocultar -->
+                <div class="input-group password-group">
+                    <input type="password" id="password" placeholder="contraseña1234*" required>
+                    <i class="fa-regular fa-eye toggle-password" id="togglePassword"></i>
+                </div>
+
+                <!-- Botón de iniciar sesión -->
+                <button type="submit" class="btn-login">Iniciar sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SDK de Supabase (necesario para que script.js funcione correctamente) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Script de lógica (Supabase y autenticación) -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>

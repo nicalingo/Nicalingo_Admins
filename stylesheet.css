@@ -1,0 +1,187 @@
+:root {
+  --primary-yellow: #FFDE59;
+  --primary-blue: #253B83;
+  --secondary-sky-blue: #0090D6;
+  --text-white: #FFFFFF;
+  --text-dark: #1C1B1F;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: var(--primary-yellow);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Contenedor principal adaptable */
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--primary-yellow);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  border-radius: 30px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+/* En PC hacemos que el contenedor luzca como una tarjeta elegante centrada */
+@media (min-width: 768px) {
+  body {
+    background: linear-gradient(135deg, var(--primary-yellow) 50%, #f4d03f 100%);
+  }
+
+  .login-container {
+    max-width: 900px; /* Un poco más ancho para dar espacio al coco */
+    height: 540px;
+    flex-direction: row;
+    border-radius: 35px;
+  }
+
+  .top-section {
+    flex: 1.1;
+    background-color: var(--primary-yellow);
+    justify-content: center;
+    border-top-left-radius: 35px;
+    border-bottom-left-radius: 35px;
+  }
+
+  /* AQUÍ AGRANDAMOS EL COCO EN PC */
+  .top-section .mascot-wrapper {
+    width: 210px; /* Antes estaba pequeño, ahora tiene gran presencia */
+    height: 210px;
+    margin-bottom: 20px;
+  }
+
+  .top-section .welcome-text {
+    font-size: 26px; /* Texto de bienvenida un poco más grande acorde al coco */
+  }
+
+  .bottom-section {
+    flex: 1.2;
+    height: 100% !important;
+    border-top-left-radius: 40px;
+    border-bottom-left-radius: 40px;
+    border-top-right-radius: 0;
+    justify-content: center;
+    padding: 40px;
+  }
+}
+
+/* Sección Superior Amarilla (Móvil por defecto) */
+.top-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.mascot-wrapper {
+  width: 130px;
+  height: 130px;
+  margin-bottom: 15px;
+}
+
+.mascot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.welcome-text {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-dark);
+  text-align: center;
+}
+
+/* Sección Inferior Azul */
+.bottom-section {
+  background-color: var(--primary-blue);
+  width: 100%;
+  height: 60vh;
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-title {
+  color: var(--text-white);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+/* Campos de entrada */
+form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: center;
+}
+
+.input-group {
+  width: 100%;
+  position: relative;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: 30px;
+  border: none;
+  background-color: var(--text-white);
+  color: var(--text-dark);
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.input-group input::placeholder {
+  color: #9C9C9C;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  cursor: pointer;
+}
+
+/* Botón de Iniciar Sesión */
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  border-radius: 30px;
+  border: none;
+  background-color: var(--secondary-sky-blue);
+  color: var(--text-white);
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.btn-login:hover {
+  background-color: #007bb8;
+}
