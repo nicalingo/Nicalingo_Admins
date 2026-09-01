@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Historial de Lecciones</title>
+    <link rel="stylesheet" href="../stylesheet.css">
+    <link rel="stylesheet" href="../styles/add_leccion.css">
+    <link rel="stylesheet" href="../styles/historial_lecciones.css">
+    <link rel="stylesheet" href="../styles/sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="admin-layout">
+        <!-- Panel Lateral Desplegable -->
+        <nav class="sidebar" id="sidebar">
+            <div>
+                <div class="sidebar-brand">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-graduation-cap"></i> 
+                        <span>NicaLingo Admin</span>
+                    </div>
+                    <button id="toggleSidebar" class="btn-toggle-sidebar" title="Ocultar/Mostrar menú">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="add_leccion.html">
+                            <i class="fa-solid fa-plus-circle"></i> 
+                            <span>Agregar Lección</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="historial_lecciones.html">
+                            <i class="fa-solid fa-list-check"></i> 
+                            <span>Historial de Lecciones</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="sidebar-footer">
+                <button id="btnLogout" class="btn-sidebar-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> 
+                    <span>Salir</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+            <div class="dashboard-container" style="box-shadow: none; padding: 0; background: transparent;">
+                <div class="header-dash">
+                    <h2>Historial de Mis Lecciones</h2>
+                </div>
+
+                <p class="subtitle-desc">Aquí puedes consultar, editar o eliminar las lecciones que has registrado en la plataforma.</p>
+
+                <div id="loadingMessage">
+                    Cargando historial...
+                </div>
+
+                <table class="history-table" id="historyTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Nivel</th>
+                            <th>Lección #</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>XP</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <!-- Se llena dinámicamente con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Script rápido para el menú colapsable (mantiene la lógica intacta)
+        const toggleSidebarBtn = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        if (toggleSidebarBtn && sidebar) {
+            toggleSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+        }
+    </script>
+    <script type="module" src="../script/historial_lecciones.js"></script>
+</body>
+</html>

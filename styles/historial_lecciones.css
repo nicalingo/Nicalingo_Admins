@@ -1,0 +1,88 @@
+/* Estilos específicos para la pantalla de historial */
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.history-table th, 
+.history-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.history-table th {
+    background-color: #f8f9fa;
+    color: #333;
+    font-weight: bold;
+}
+
+.history-table tr:hover {
+    background-color: #f1f2f6;
+}
+
+.nav-links {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-link {
+    text-decoration: none;
+    background: #4a6fa5;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-link:hover {
+    background: #3b5984;
+}
+
+#loadingMessage {
+    text-align: center;
+    padding: 20px;
+    font-weight: bold;
+    color: #666;
+}
+
+/* Botones de acción en la tabla de historial */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    border: none;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 13px;
+}
+
+.btn-edit {
+    background-color: #f39c12;
+}
+
+.btn-edit:hover {
+    background-color: #d68910;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}

@@ -5,7 +5,10 @@ const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-// 1. Proteger la ruta usando la función RPC segura
+// Variable global para almacenar la sesión actual
+let currentUserSession = null
+
+// 1. Proteger la ruta usando la función RPC segura y obtener la sesión
 async function checkAuthAndRole() {
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -14,6 +17,8 @@ async function checkAuthAndRole() {
         window.location.href = '../index.html'
         return
     }
+
+    currentUserSession = session // Guardamos la sesión para usar el user.id después
 
     const { data: userRole, error } = await supabase
         .rpc('get_user_role', { user_id: session.user.id })
@@ -150,6 +155,11 @@ const lessonForm = document.getElementById('lessonForm')
 lessonForm.addEventListener('submit', async (e) => {
     e.preventDefault()
 
+    if (!currentUserSession) {
+        alert('No hay una sesión activa detectada. Vuelve a iniciar sesión.')
+        return
+    }
+
     const languageId = document.getElementById('languageSelect').value
     const levelNum = parseInt(document.getElementById('levelNumber').value)
     const lessonNum = parseInt(document.getElementById('lessonNumber').value)
@@ -162,6 +172,7 @@ lessonForm.addEventListener('submit', async (e) => {
     const audioFileInput = document.getElementById('audioFile')
 
     const optionInputs = document.querySelectorAll('.opt-text')
+    const userId = currentUserSession.user.id
 
     try {
         let finalAudioUrl = null;
@@ -184,7 +195,7 @@ lessonForm.addEventListener('submit', async (e) => {
             finalAudioUrl = publicUrlData.publicUrl;
         }
 
-        // A. Buscar o crear el Nivel automáticamente
+        // A. Buscar o crear el Nivel automáticamente (con created_by si se requiere, o solo por idioma y número)
         let { data: levelData, error: levelError } = await supabase
             .from('levels')
             .select('id')
@@ -196,7 +207,12 @@ lessonForm.addEventListener('submit', async (e) => {
         if (levelError || !levelData) {
             const { data: newLevel, error: createLevelError } = await supabase
                 .from('levels')
-                .insert([{ language_id: languageId, level_number: levelNum, title: `Nivel ${levelNum}` }])
+                .insert([{ 
+                    language_id: languageId, 
+                    level_number: levelNum, 
+                    title: `Nivel ${levelNum}`,
+                    created_by: userId 
+                }])
                 .select('id')
                 .single()
 
@@ -206,7 +222,7 @@ lessonForm.addEventListener('submit', async (e) => {
             levelId = levelData.id
         }
 
-        // B. Insertar la Lección
+        // B. Insertar la Lección incluyendo el created_by
         const { data: newLesson, error: insertLessonError } = await supabase
             .from('lessons')
             .insert([{
@@ -214,7 +230,8 @@ lessonForm.addEventListener('submit', async (e) => {
                 lesson_number: lessonNum,
                 title: title,
                 description: description,
-                xp_reward: xpReward
+                xp_reward: xpReward,
+                created_by: userId // <--- Agregado aquí
             }])
             .select('id')
             .single()
