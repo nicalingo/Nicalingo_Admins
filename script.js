@@ -1,15 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // Tus credenciales oficiales de Supabase
-const SUPABASE_URL = 'https://lughfwqpcskesetjfviv.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_paJlhlK-qkdKXkMrmXfE3w_6GjVsbe5'
+const SUPABASE_URL = 'https://xrisuvdfdnpzudbaqzbv.supabase.co'
+const SUPABASE_PUBLISH_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
-// Inicializar el cliente de Supabase
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Inicializar el cliente de Supabase[cite: 1]
+export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISH_KEY)
 
 // --- LÓGICA DE LA INTERFAZ DE LOGIN ---
 
-// 1. Mostrar / Ocultar contraseña con el ícono del ojo
+// 1. Mostrar / Ocultar contraseña con el ícono del ojo[cite: 1]
 const togglePassword = document.getElementById('togglePassword')
 const passwordInput = document.getElementById('password')
 
@@ -21,7 +21,7 @@ if (togglePassword && passwordInput) {
     })
 }
 
-// 2. Manejar el evento submit del formulario de inicio de sesión con alertas personalizadas
+// 2. Manejar el evento submit del formulario de inicio de sesión[cite: 1]
 const loginForm = document.getElementById('loginForm')
 
 if (loginForm) {
@@ -32,13 +32,12 @@ if (loginForm) {
         const password = passwordInput.value.trim()
 
         try {
-            // Intentar autenticar con Supabase Auth
+            // Intentar autenticar con Supabase Auth[cite: 1]
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password,
             })
 
-            // Manejo específico si el correo no está registrado o la contraseña falla
             if (authError) {
                 if (authError.message.includes('Invalid login credentials') || authError.message.includes('User not found')) {
                     alert('Correo no registrado o contraseña incorrecta.')
@@ -50,36 +49,27 @@ if (loginForm) {
 
             const userId = authData.user.id
 
-            // Consultar el rol del usuario en la tabla 'profiles'
-            const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', userId)
-                .single()
+            // Consultar el rol del usuario usando la función RPC corregida[cite: 1]
+            const { data: userRole, error: profileError } = await supabase
+                .rpc('get_user_role', { user_id: userId })
 
-            if (profileError || !profileData) {
+            if (profileError || !userRole) {
+                console.error('Error al obtener rol:', profileError)
                 alert('No se encontró el perfil de usuario en la base de datos.')
                 return
             }
 
-            const userRole = profileData.role
-
-            // Validar si tiene permisos para acceder al panel web (solo admin o editor)
+            // Validar si tiene permisos para acceder al panel web (solo admin o editor)[cite: 1]
             if (userRole !== 'admin' && userRole !== 'editor') {
                 alert('Permiso denegado. No tienes autorización para acceder a este panel.')
-                // Opcional: cerrar la sesión automáticamente si intentó entrar sin permisos
                 await supabase.auth.signOut()
                 return
             }
 
             alert(`¡Bienvenido! Has iniciado sesión como: ${userRole}`)
 
-            // Redirección basada estrictamente en el rol autorizado
-            if (userRole === 'admin') {
-                window.location.href = 'screens/admin_user.html'
-            } else if (userRole === 'editor') {
-                window.location.href = 'screens/add_leccion.html'
-            }
+            // Redirección directa a add_leccion.html[cite: 1]
+            window.location.href = 'screens/add_leccion.html'
 
         } catch (error) {
             console.error('Error inesperado en el login:', error.message)

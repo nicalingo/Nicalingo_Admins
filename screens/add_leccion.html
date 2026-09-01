@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Agregar Lección y Preguntas</title>
+    <link rel="stylesheet" href="../stylesheet.css">
+    <link rel="stylesheet" href="../styles/add_leccion.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="header-dash">
+            <h2>Panel de Editor - NicaLingo</h2>
+            <button id="btnLogout" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Salir</button>
+        </div>
+
+        <p class="subtitle-desc">Agrega contenido interactivo, lecciones y preguntas para los idiomas de NicaLingo.</p>
+
+        <form id="lessonForm">
+            <!-- DATOS GENERALES DE LA LECCIÓN -->
+            <fieldset class="form-fieldset">
+                <legend>1. Información de la Lección</legend>
+                
+                <div class="form-group">
+                    <label for="languageSelect">Idioma</label>
+                    <select id="languageSelect" required>
+                        <option value="">Cargando idiomas...</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="levelNumber">Número de Nivel</label>
+                        <input type="number" id="levelNumber" min="1" max="5" placeholder="Ej. 1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lessonNumber">Número de Lección</label>
+                        <input type="number" id="lessonNumber" min="1" placeholder="Ej. 1" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lessonTitle">Título de la Lección</label>
+                    <input type="text" id="lessonTitle" placeholder="Ej. Saludos básicos" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="lessonDesc">Descripción</label>
+                    <textarea id="lessonDesc" rows="2" placeholder="Breve descripción..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="xpReward">Recompensa de XP</label>
+                    <input type="number" id="xpReward" value="10" required>
+                </div>
+            </fieldset>
+
+            <!-- PREGUNTA / EJERCICIO DE LA LECCIÓN -->
+            <fieldset class="form-fieldset">
+                <legend>2. Pregunta o Ejercicio Inicial</legend>
+
+                <div class="form-group">
+                    <label for="questionType">Tipo de Lección / Ejercicio</label>
+                    <select id="questionType" required>
+                        <option value="multiple_choice">Selección Múltiple (Texto)</option>
+                        <option value="audio_choice">Selección Múltiple (Con Audio)</option>
+                        <option value="order_phrase">Ordenar la Frase</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="questionText">Enunciado de la Pregunta / Instrucción</label>
+                    <input type="text" id="questionText" placeholder="Ej. Ordena la frase o responde la pregunta" required>
+                </div>
+
+                <!-- Selector de archivo de audio (Oculto por defecto) -->
+                <div class="form-group" id="audioUrlGroup" style="display: none;">
+                    <label for="audioFile">Archivo de Audio (MP3, WAV)</label>
+                    <input type="file" id="audioFile" accept="audio/*">
+                </div>
+
+                <div class="form-group">
+                    <label id="optionsLabel">Opciones de Respuesta</label>
+                    <div id="optionsContainer" class="options-container">
+                        <!-- Se generan dinámicamente desde JS -->
+                    </div>
+                    <button type="button" id="btnAddOption" class="btn-add-option" style="display: none;">
+                        <i class="fa-solid fa-plus"></i> Añadir Palabra/Casilla
+                    </button>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn-submit">Guardar Lección Completa</button>
+        </form>
+    </div>
+
+    <script type="module" src="../script/add_leccion.js"></script>
+</body>
+</html>
