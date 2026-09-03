@@ -8,7 +8,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 let currentUserSession = null
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
 
-// Variable en caché para evitar el glitch de recarga de imagen
 let cachedMediaUrl = null;
 let cachedMediaType = null;
 
@@ -116,7 +115,6 @@ function addDistractorRow(value = '') {
     updatePreviewExercise()
 }
 
-// Añadir fila de opción múltiple dinámica
 function addMultipleChoiceRow(value = '', isChecked = false) {
     const container = document.getElementById('optionsContainer')
     const index = container.querySelectorAll('.dynamic-choice-row').length
@@ -146,6 +144,31 @@ function addMultipleChoiceRow(value = '', isChecked = false) {
     updatePreviewExercise()
 }
 
+function addIntroductionRow(word = '', translation = '') {
+    const container = document.getElementById('optionsContainer')
+
+    const row = document.createElement('div')
+    row.className = 'dynamic-row intro-row'
+    row.style.cssText = 'display: flex; align-items: center; gap: 8px; margin-bottom: 8px;'
+    row.innerHTML = `
+        <input type="text" placeholder="Palabra (Ej. Guacal)" class="opt-text intro-word" value="${word}" required style="flex: 1;">
+        <input type="text" placeholder="Traducción (Ej. Jícara)" class="opt-text intro-translation" value="${translation}" required style="flex: 1;">
+        <button type="button" class="btn-remove-row" style="background: #e53e3e; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+    `
+
+    row.querySelector('.btn-remove-row').addEventListener('click', () => {
+        if (container.querySelectorAll('.intro-row').length > 1) {
+            row.remove()
+            updatePreviewExercise()
+        } else {
+            alert('Debes tener al menos un par de vocabulario.')
+        }
+    })
+
+    container.appendChild(row)
+    updatePreviewExercise()
+}
+
 function reindexMultipleChoiceRows() {
     const rows = document.querySelectorAll('#optionsContainer .dynamic-choice-row')
     rows.forEach((row, idx) => {
@@ -165,7 +188,6 @@ function renderOptionsInputs() {
     if (!container) return
     container.innerHTML = ''
 
-    // Remover botón trampa si existía de antes
     const oldBtnDistractor = document.getElementById('btnAddDistractor')
     if (oldBtnDistractor) oldBtnDistractor.remove()
 
@@ -192,8 +214,18 @@ function renderOptionsInputs() {
             btnAdd.parentNode.appendChild(btnDistractor)
         }
 
+    } else if (questionType === 'introduction') {
+        if (label) label.textContent = 'Listado de Vocabulario (Palabra y Traducción)'
+        
+        if (btnAdd) {
+            btnAdd.style.display = 'inline-flex'
+            btnAdd.innerHTML = '<i class="fa-solid fa-plus"></i> Añadir Par'
+        }
+
+        addIntroductionRow()
+        addIntroductionRow()
+
     } else {
-        // Aplica tanto para 'multiple_choice' como para 'multimedia'
         if (label) label.textContent = 'Opciones de Respuesta (Marca la casilla de la correcta)'
         
         if (btnAdd) {
@@ -214,6 +246,8 @@ if (btnAddOpt) {
         const questionType = document.getElementById('questionType').value
         if (questionType === 'order_phrase') {
             addOrderOptionRow()
+        } else if (questionType === 'introduction') {
+            addIntroductionRow()
         } else {
             addMultipleChoiceRow()
         }
@@ -261,8 +295,9 @@ if (lessonNumInput) {
 const questionTypeSelect = document.getElementById('questionType')
 const previewContainer = document.getElementById('previewQuestionContainer')
 const generalFileInput = document.getElementById('generalFile')
+const btnRemoveFile = document.getElementById('btnRemoveFile')
 
-// --- VALIDACIÓN Y CACHÉ DE ARCHIVO GENERAL (EVITA GLITCH DE IMAGEN) ---
+// --- GESTIÓN DE ARCHIVO GENERAL Y BOTÓN ELIMINAR ---
 if (generalFileInput) {
     generalFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -272,11 +307,11 @@ if (generalFileInput) {
                 generalFileInput.value = ''; 
                 cachedMediaUrl = null;
                 cachedMediaType = null;
+                if (btnRemoveFile) btnRemoveFile.style.display = 'none';
                 updatePreviewExercise();
                 return;
             }
 
-            // Guardar en caché la URL del objeto solo al cambiar el archivo
             cachedMediaUrl = URL.createObjectURL(file);
             if (file.type.startsWith('audio/')) {
                 cachedMediaType = 'audio';
@@ -285,10 +320,23 @@ if (generalFileInput) {
             } else {
                 cachedMediaType = 'file';
             }
+
+            if (btnRemoveFile) btnRemoveFile.style.display = 'inline-flex';
         } else {
             cachedMediaUrl = null;
             cachedMediaType = null;
+            if (btnRemoveFile) btnRemoveFile.style.display = 'none';
         }
+        updatePreviewExercise();
+    });
+}
+
+if (btnRemoveFile) {
+    btnRemoveFile.addEventListener('click', () => {
+        if (generalFileInput) generalFileInput.value = '';
+        cachedMediaUrl = null;
+        cachedMediaType = null;
+        btnRemoveFile.style.display = 'none';
         updatePreviewExercise();
     });
 }
@@ -304,7 +352,6 @@ function updatePreviewExercise() {
 
     let mediaHtml = ''
 
-    // Renderizar usando la caché para evitar que parpadee al escribir texto
     if (cachedMediaUrl && cachedMediaType) {
         if (cachedMediaType === 'audio') {
             mediaHtml = `
@@ -362,6 +409,31 @@ function updatePreviewExercise() {
                 ${spansHtml}
             </div>
             <button type="button" class="btn-prev-action">Comprobar Orden</button>
+        `
+    } else if (type === 'introduction') {
+        const wordInputs = document.querySelectorAll('.intro-word')
+        const translationInputs = document.querySelectorAll('.intro-translation')
+        
+        let listHtml = ''
+        wordInputs.forEach((input, index) => {
+            const w = input.value.trim() !== '' ? input.value : `Palabra ${index + 1}`
+            const t = translationInputs[index] && translationInputs[index].value.trim() !== '' ? translationInputs[index].value : `Traducción ${index + 1}`
+            
+            listHtml += `
+                <div style="display: flex; justify-content: space-between; background: #f8fafc; padding: 6px 10px; border-radius: 4px; margin-bottom: 4px; font-size: 12px; border: 1px solid #e2e8f0;">
+                    <span><b>${w}</b></span>
+                    <span style="color: #4a5568;">${t}</span>
+                </div>
+            `
+        })
+
+        previewContainer.innerHTML = `
+            ${mediaHtml}
+            <p><b>1.</b> ${currentQuestionText}</p>
+            <div style="max-height: 140px; overflow-y: auto; margin-bottom: 10px;">
+                ${listHtml}
+            </div>
+            <button type="button" class="btn-prev-action">Continuar</button>
         `
     } else {
         const optionInputs = document.querySelectorAll('.opt-text')
@@ -421,7 +493,6 @@ if (lessonForm) {
 
         const questionType = document.getElementById('questionType').value
 
-        // VALIDACIÓN: Si es tipo multimedia, el archivo es obligatorio
         if (questionType === 'multimedia') {
             if (!generalFileInput || generalFileInput.files.length === 0) {
                 alert('Has seleccionado el tipo "Multimedia". Debes subir obligatoriamente un archivo (audio o imagen).');
@@ -519,6 +590,21 @@ if (lessonForm) {
                         optionsData.push({ question_id: questionId, option_text: input.value.trim(), is_correct: false })
                     }
                 })
+            } else if (questionType === 'introduction') {
+                const wordInputs = document.querySelectorAll('.intro-word')
+                const translationInputs = document.querySelectorAll('.intro-translation')
+
+                wordInputs.forEach((input, index) => {
+                    const w = input.value.trim()
+                    const t = translationInputs[index] ? translationInputs[index].value.trim() : ''
+                    if (w !== '') {
+                        optionsData.push({ 
+                            question_id: questionId, 
+                            option_text: `${w} : ${t}`, 
+                            is_correct: true 
+                        })
+                    }
+                })
             } else {
                 const checkedRadio = document.querySelector('input[name="correctOption"]:checked')
                 const correctRadioIndex = checkedRadio ? parseInt(checkedRadio.value) : 0
@@ -540,6 +626,7 @@ if (lessonForm) {
             lessonForm.reset()
             cachedMediaUrl = null
             cachedMediaType = null
+            if (btnRemoveFile) btnRemoveFile.style.display = 'none';
             loadLanguages()
             renderOptionsInputs()
             updatePreviewExercise()

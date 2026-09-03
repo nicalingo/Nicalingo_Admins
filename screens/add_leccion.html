@@ -130,6 +130,7 @@
                                             <option value="multiple_choice">Selección múltiple</option>
                                             <option value="order_phrase">Ordenar la frase</option>
                                             <option value="multimedia">Multimedia</option>
+                                            <option value="introduction">Introducción (Vocabulario)</option>
                                         </select>
                                     </div>
 
@@ -145,11 +146,16 @@
                                     </div>
                                 </div>
 
-                                <!-- Pestaña 3: Multimedia (Archivo general único) -->
+                                <!-- Pestaña 3: Multimedia (Archivo general con botón de eliminar) -->
                                 <div class="tab-pane" id="tab-imagen">
                                     <div class="form-group">
                                         <label>Archivo Multimedia (Audio o Imagen - Máx 5MB)</label>
-                                        <input type="file" id="generalFile" class="file-input-custom" accept="audio/*,image/*">
+                                        <div style="display: flex; gap: 8px; align-items: center;">
+                                            <input type="file" id="generalFile" class="file-input-custom" accept="audio/*,image/*" style="flex: 1;">
+                                            <button type="button" id="btnRemoveFile" style="background: #e53e3e; color: white; border: none; padding: 7px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: none;" title="Quitar archivo">
+                                                <i class="fa-solid fa-trash"></i> Quitar
+                                            </button>
+                                        </div>
                                         <small style="display: block; color: #666; margin-top: 4px; font-size: 11px;">El sistema detectará automáticamente si es una imagen o un audio. (Obligatorio si el tipo de lección es Multimedia).</small>
                                     </div>
                                 </div>
