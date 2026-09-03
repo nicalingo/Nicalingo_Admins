@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NicaLingo - Creador / Editor de Lección</title>
-    <icon rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
+    <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
     <link rel="stylesheet" href="../stylesheet.css">
     <link rel="stylesheet" href="../styles/sidebar.css">
     <link rel="stylesheet" href="../styles/add_leccion.css">
@@ -98,7 +98,7 @@
                             <div class="inner-tabs-menu">
                                 <button type="button" class="tab-btn active" data-tab="tab-texto"><i class="fa-solid fa-t"></i>Enunciado</button>
                                 <button type="button" class="tab-btn" data-tab="tab-tipo"><i class="fa-solid fa-book-bookmark"></i> Tipo de lección</button>
-                                <button type="button" class="tab-btn" data-tab="tab-imagen"><i class="fa-solid fa-image"></i> Imagen</button>
+                                <button type="button" class="tab-btn" data-tab="tab-imagen"><i class="fa-solid fa-folder-open"></i> Multimedia</button>
                             </div>
 
                             <!-- Contenido de las pestañas -->
@@ -127,43 +127,30 @@
                                     <div class="form-group">
                                         <label for="questionType">Seleccionar Tipo de Ejercicio</label>
                                         <select id="questionType">
-                                            <option value="order_phrase">Ordenar la frase</option>
                                             <option value="multiple_choice">Selección múltiple</option>
-                                            <option value="audio_choice">Selección múltiple con audio</option>
+                                            <option value="order_phrase">Ordenar la frase</option>
+                                            <option value="multimedia">Multimedia</option>
                                         </select>
                                     </div>
 
-                                    <div class="form-group" id="audioUrlGroup" style="display: none;">
-                                        <label>Archivo de Audio (MP3, WAV)</label>
-                                        <input type="file" id="audioFile" accept="audio/*">
-                                    </div>
-
                                     <div class="form-group">
-                                        <label id="optionsLabel">Frase Correcta y Comodines (Palabras trampa)</label>
+                                        <label id="optionsLabel">Opciones de Respuesta (Marca la casilla de la correcta)</label>
                                         <div id="optionsContainer" class="options-container"></div>
                                         
-                                        <!-- Botones de control para añadir palabras correctas o trampas -->
                                         <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
                                             <button type="button" id="btnAddOption" class="btn-secondary" style="background: #1c3d98; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                                                <i class="fa-solid fa-plus"></i> Añadir Palabra
+                                                <i class="fa-solid fa-plus"></i> Añadir Opción
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Pestaña 3: Imagen -->
+                                <!-- Pestaña 3: Multimedia (Archivo general único) -->
                                 <div class="tab-pane" id="tab-imagen">
                                     <div class="form-group">
-                                        <label>Subir imagen</label>
-                                        <input type="file" class="file-input-custom" accept=".jpg, .png, .svg, .webp">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Función de la imagen</label>
-                                        <select>
-                                            <option>Encabezado</option>
-                                            <option>Ilustración de apoyo</option>
-                                            <option>Opción visual</option>
-                                        </select>
+                                        <label>Archivo Multimedia (Audio o Imagen - Máx 5MB)</label>
+                                        <input type="file" id="generalFile" class="file-input-custom" accept="audio/*,image/*">
+                                        <small style="display: block; color: #666; margin-top: 4px; font-size: 11px;">El sistema detectará automáticamente si es una imagen o un audio. (Obligatorio si el tipo de lección es Multimedia).</small>
                                     </div>
                                 </div>
                             </div>
@@ -212,7 +199,6 @@
                             </div>
                             <p id="prevDesc">En NicaLingo, los saludos son la base para una buena conversación.</p>
                             
-                            <!-- Contenedor dinámico del tipo de ejercicio -->
                             <div class="preview-question-box" id="previewQuestionContainer"></div>
                         </div>
                     </div>
@@ -223,7 +209,6 @@
         </main>
     </div>
 
-    <!-- Script separado en su archivo correspondiente -->
     <script type="module" src="../script/add_leccion.js"></script>
 </body>
 </html>
