@@ -1,172 +1,366 @@
-/* Estilos específicos para el panel de agregar lección */
-.dashboard-container {
-    max-width: 700px;
-    margin: 30px auto;
-    background: white;
+/* Layout general del editor - Ocupa todo el ancho restante */
+.main-content-dashboard {
+    flex: 1;
+    width: 100%; /* Asegura que tome el ancho libre */
+    min-width: 0; /* Vital para que CSS Grid no colapse */
     padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background-color: #ffd84d;
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
 }
 
-.header-dash {
+.top-title-header h1 {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    letter-spacing: 0.5px;
+}
+
+/* Grilla Responsiva para PC: Usa todo el ancho con fracciones fluidas */
+.editor-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px; /* Columna izquierda flexible, derecha fija de buen tamaño */
+    gap: 30px;
+    align-items: start;
+    width: 100%;
+    max-width: 100%; /* Elimina cualquier restricción previa de ancho */
+    box-sizing: border-box;
+    padding-bottom: 50px;
+}
+
+.editor-main-column {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    min-width: 0;
 }
 
-.btn-logout {
-    background: #e74c3c;
+/* Tarjetas de secciones ocupando todo el ancho de su columna */
+.editor-card {
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-header-bar {
+    background: #1c3d98;
     color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.btn-logout:hover {
-    background: #c0392b;
-}
-
-.subtitle-desc {
-    margin-bottom: 20px;
-    color: #555;
-}
-
-.form-fieldset {
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.form-fieldset legend {
+.step-badge {
+    background: rgba(255,255,255,0.2);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
     font-weight: bold;
-    padding: 0 5px;
-    color: #333;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.card-header-bar h2 {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 22px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Campos y filas de formularios */
+.form-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
 }
 
 .form-group {
     margin-bottom: 15px;
+    width: 100%;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 600;
     color: #444;
+    margin-bottom: 6px;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group select,
-.form-group textarea {
+.form-group input, .form-group select, .form-group textarea {
     width: 100%;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
+    padding: 10px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
     font-size: 14px;
+    box-sizing: border-box;
+    background: #fafafa;
 }
 
-.form-row {
+/* Pestañas Internas (Sección 2) */
+.inner-tabs-layout {
     display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.form-row .form-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.options-container {
+.inner-tabs-menu {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    width: 180px;
+    flex-shrink: 0;
+    border-right: 1px solid #eee;
+    padding-right: 15px;
 }
 
-.option-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.option-row input.opt-text {
-    flex: 1;
-    padding: 7px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.option-row label {
-    font-size: 14px;
-    margin-bottom: 0;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: pointer;
-}
-
-.btn-submit {
-    width: 100%;
-    background: #27ae60;
-    color: white;
-    padding: 12px;
+.tab-btn {
+    background: #f0f4ff;
     border: none;
+    padding: 11px 14px;
+    text-align: left;
     border-radius: 6px;
-    font-size: 16px;
-    font-weight: bold;
+    font-weight: 600;
+    color: #1c3d98;
     cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-submit:hover {
-    background: #219653;
-}
-
-/* Estilos dinámicos para las filas de opciones y palabras */
-.dynamic-row {
     display: flex;
+    align-items: center;
     gap: 10px;
-    align-items: center;
-    margin-bottom: 8px;
+    font-size: 13px;
+    transition: all 0.2s;
 }
 
-.dynamic-row input.opt-text {
+.tab-btn.active {
+    background: #1c3d98;
+    color: white;
+}
+
+.inner-tabs-content {
     flex: 1;
-    padding: 7px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
+    min-width: 0;
 }
 
-.dynamic-row label {
-    font-size: 14px;
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Editor de Texto Rico Simulado */
+.rich-text-editor-box {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.rte-toolbar {
+    background: #f8f9fa;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
     display: flex;
+    gap: 6px;
     align-items: center;
-    gap: 4px;
-    cursor: pointer;
-    min-width: 90px;
-    margin-bottom: 0;
+    flex-wrap: wrap;
 }
 
-.dynamic-row span {
+.rte-toolbar button {
+    background: transparent;
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.rte-toolbar button:hover {
+    background: #e2e8f0;
+}
+
+.rte-textarea {
+    border: none !important;
+    background: white !important;
+    resize: vertical;
+    min-height: 120px;
+    padding: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+/* Columna Derecha / Vista Previa (Sticky para PC) */
+.editor-sidebar-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 30px;
+    width: 100%;
+}
+
+.preview-card-box {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 2px solid #1c3d98;
+}
+
+.preview-title-bar {
+    background: #1c3d98;
+    color: white;
+    padding: 10px 15px;
+    font-size: 13px;
     font-weight: bold;
-    min-width: 25px;
     text-align: center;
 }
 
-.btn-remove-row {
-    background: #e74c3c;
+.preview-content-box {
+    padding: 18px;
+}
+
+.preview-content-box h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.preview-badges {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.badge-pill {
+    background: #fff3cd;
+    color: #856404;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.preview-content-box p {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.preview-question-box {
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.preview-question-box p {
+    font-size: 13px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.preview-question-box label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    margin-bottom: 6px;
+    color: #444;
+}
+
+.btn-prev-action {
+    display: block;
+    width: 100%;
+    background: #1c3d98;
     color: white;
     border: none;
-    padding: 6px 10px;
+    padding: 8px;
     border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    margin-top: 12px;
     cursor: pointer;
 }
 
-.btn-remove-row:hover {
-    background: #c0392b;
+/* Botón Guardar Principal */
+.btn-guardar-main {
+    background: #1c3d98;
+    color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: background 0.2s;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-guardar-main:hover {
+    background: #152f75;
+}
+
+/* Mascota opcional */
+.mascot-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+}
+
+/* --- MEDIA QUERIES PARA DISPOSITIVOS MÓVILES Y TABLETS --- */
+@media (max-width: 1100px) {
+    .editor-grid-layout {
+        grid-template-columns: 1fr; /* En pantallas medianas baja la vista previa */
+    }
+    .editor-sidebar-preview {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content-dashboard {
+        padding: 15px;
+    }
+    .form-row-3 {
+        grid-template-columns: 1fr;
+    }
+    .inner-tabs-layout {
+        flex-direction: column;
+    }
+    .inner-tabs-menu {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        padding-right: 0;
+    }
+    .tab-btn {
+        flex: 1;
+        justify-content: center;
+        white-space: nowrap;
+    }
 }
