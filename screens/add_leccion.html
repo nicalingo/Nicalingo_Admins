@@ -5,215 +5,201 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NicaLingo - Creador / Editor de Lección</title>
     <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
-    <link rel="stylesheet" href="../stylesheet.css">
-    <link rel="stylesheet" href="../styles/sidebar.css">
-    <link rel="stylesheet" href="../styles/add_leccion.css">
+    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Único archivo CSS local necesario -->
+    <link rel="stylesheet" href="../styles/add_leccion.css">
 </head>
 <body>
 
-    <div class="admin-layout">
-        <!-- Panel Lateral -->
-        <nav class="sidebar" id="sidebar">
-            <div>
-                <div class="sidebar-brand">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fa-solid fa-graduation-cap"></i> 
-                        <span>NicaLingo Admin</span>
+    <!-- Menú Lateral (Sidebar idéntico al historial) -->
+    <aside>
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="home.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li><a href="add_leccion.html" class="active"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
+            <li><a href="historial_lecciones.html"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+            <li><a href="admin_user.html"><i class="fa-solid fa-gear"></i> Ajustes</a></li>
+        </ul>
+        <button id="btnLogout" class="btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+        </button>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main>
+        <header>
+            <h1>CREADOR / EDITOR DE LECCIÓN</h1>
+        </header>
+
+        <form id="lessonForm" class="editor-grid-layout">
+            <div class="editor-main-column">
+                
+                <!-- SECCIÓN 1: Información General -->
+                <section class="editor-card">
+                    <div class="card-header-bar">
+                        <span class="step-badge">1</span>
+                        <h2>Información general</h2>
                     </div>
-                    <button id="toggleSidebar" class="btn-toggle-sidebar" title="Ocultar/Mostrar menú">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                </div>
-                <ul class="sidebar-menu">
-                    <li><a href="#"><i class="fa-solid fa-house"></i> <span>Inicio</span></a></li>
-                    <li class="active"><a href="add_leccion.html"><i class="fa-solid fa-book-open"></i> <span>Lecciones</span></a></li>
-                    <li><a href="historial_lecciones.html"><i class="fa-solid fa-trash"></i> <span>Historial</span></a></li>
-                    <li><a href="#"><i class="fa-solid fa-gear"></i> <span>Ajustes</span></a></li>
-                    <li><a href="#"><i class="fa-solid fa-user"></i> <span>Admin</span></a></li>
-                </ul>
-            </div>
-            <div class="sidebar-footer">
-                <button id="btnLogout" class="btn-sidebar-logout">
-                    <i class="fa-solid fa-right-from-bracket"></i> 
-                    <span>Cerrar sesión</span>
-                </button>
-                <div class="sidebar-uni">Sinskira UNAN-León</div>
-            </div>
-        </nav>
-
-        <!-- Contenido Principal -->
-        <main class="main-content-dashboard">
-            <header class="top-title-header">
-                <h1>CREADOR / EDITOR DE LECCIÓN</h1>
-            </header>
-
-            <form id="lessonForm" class="editor-grid-layout">
-                <div class="editor-main-column">
-                    
-                    <!-- SECCIÓN 1: Información General -->
-                    <section class="editor-card">
-                        <div class="card-header-bar">
-                            <span class="step-badge">1</span>
-                            <h2>Información general</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-row-3">
-                                <div class="form-group">
-                                    <label for="languageSelect">Idioma</label>
-                                    <select id="languageSelect" required>
-                                        <option value="">Cargando idiomas...</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="levelNumber">Nivel</label>
-                                    <input type="number" id="levelNumber" min="1" value="1" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="lessonNumber">Número de lección</label>
-                                    <input type="number" id="lessonNumber" min="1" value="3" required>
-                                </div>
-                            </div>
-
+                    <div class="card-body">
+                        <div class="form-row-3">
                             <div class="form-group">
-                                <label for="lessonTitle">Título de la lección</label>
-                                <input type="text" id="lessonTitle" placeholder="Nombre de la lección" required>
+                                <label for="languageSelect">Idioma</label>
+                                <select id="languageSelect" required>
+                                    <option value="">Cargando idiomas...</option>
+                                </select>
                             </div>
-
                             <div class="form-group">
-                                <label for="lessonDesc">Descripción (Opcional)</label>
-                                <textarea id="lessonDesc" rows="2" placeholder="Esta lección trata de ..."></textarea>
+                                <label for="levelNumber">Nivel</label>
+                                <input type="number" id="levelNumber" min="1" value="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="lessonNumber">Número de lección</label>
+                                <input type="number" id="lessonNumber" min="1" value="3" required>
                             </div>
                         </div>
-                    </section>
 
-                    <!-- SECCIÓN 2: Contenido de Lección (Con pestañas internas) -->
-                    <section class="editor-card">
-                        <div class="card-header-bar">
-                            <span class="step-badge">2</span>
-                            <h2>Contenido de Lección</h2>
+                        <div class="form-group">
+                            <label for="lessonTitle">Título de la lección</label>
+                            <input type="text" id="lessonTitle" placeholder="Nombre de la lección" required>
                         </div>
-                        <div class="card-body inner-tabs-layout">
-                            <!-- Pestañas internas -->
-                            <div class="inner-tabs-menu">
-                                <button type="button" class="tab-btn active" data-tab="tab-texto"><i class="fa-solid fa-t"></i>Enunciado</button>
-                                <button type="button" class="tab-btn" data-tab="tab-tipo"><i class="fa-solid fa-book-bookmark"></i> Tipo de lección</button>
-                                <button type="button" class="tab-btn" data-tab="tab-imagen"><i class="fa-solid fa-folder-open"></i> Multimedia</button>
-                            </div>
 
-                            <!-- Contenido de las pestañas -->
-                            <div class="inner-tabs-content">
-                                <!-- Pestaña 1: Texto -->
-                                <div class="tab-pane active" id="tab-texto">
-                                    <label class="pane-label" style="display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:6px;">Contenido</label>
-                                    <div class="rich-text-editor-box">
-                                        <div class="rte-toolbar">
-                                            <button type="button"><b>B</b></button>
-                                            <button type="button"><i>I</i></button>
-                                            <button type="button"><u>U</u></button>
-                                            <span class="separator"></span>
-                                            <button type="button"><i class="fa-solid fa-align-left"></i></button>
-                                            <button type="button"><i class="fa-solid fa-align-center"></i></button>
-                                            <button type="button"><i class="fa-solid fa-align-right"></i></button>
-                                            <button type="button"><i class="fa-solid fa-list"></i></button>
-                                            <button type="button"><i class="fa-solid fa-link"></i></button>
-                                        </div>
-                                        <textarea id="questionText" class="rte-textarea" placeholder="Escribe el enunciado o teoría de la lección aquí..."></textarea>
-                                    </div>
-                                </div>
-
-                                <!-- Pestaña 2: Tipo de Lección -->
-                                <div class="tab-pane" id="tab-tipo">
-                                    <div class="form-group">
-                                        <label for="questionType">Seleccionar Tipo de Ejercicio</label>
-                                        <select id="questionType">
-                                            <option value="multiple_choice">Selección múltiple</option>
-                                            <option value="order_phrase">Ordenar la frase</option>
-                                            <option value="multimedia">Multimedia</option>
-                                            <option value="introduction">Introducción (Vocabulario)</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label id="optionsLabel">Opciones de Respuesta (Marca la casilla de la correcta)</label>
-                                        <div id="optionsContainer" class="options-container"></div>
-                                        
-                                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                                            <button type="button" id="btnAddOption" class="btn-secondary" style="background: #1c3d98; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
-                                                <i class="fa-solid fa-plus"></i> Añadir Opción
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Pestaña 3: Multimedia (Archivo general con botón de eliminar) -->
-                                <div class="tab-pane" id="tab-imagen">
-                                    <div class="form-group">
-                                        <label>Archivo Multimedia (Audio o Imagen - Máx 5MB)</label>
-                                        <div style="display: flex; gap: 8px; align-items: center;">
-                                            <input type="file" id="generalFile" class="file-input-custom" accept="audio/*,image/*" style="flex: 1;">
-                                            <button type="button" id="btnRemoveFile" style="background: #e53e3e; color: white; border: none; padding: 7px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: none;" title="Quitar archivo">
-                                                <i class="fa-solid fa-trash"></i> Quitar
-                                            </button>
-                                        </div>
-                                        <small style="display: block; color: #666; margin-top: 4px; font-size: 11px;">El sistema detectará automáticamente si es una imagen o un audio. (Obligatorio si el tipo de lección es Multimedia).</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- SECCIÓN 3: Configuración de la Lección -->
-                    <section class="editor-card">
-                        <div class="card-header-bar">
-                            <span class="step-badge">3</span>
-                            <h2>Configuración de la lección</h2>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-row-3">
-                                <div class="form-group">
-                                    <label for="xpReward">Recompensa de lección</label>
-                                    <select id="xpReward">
-                                        <option value="10">10 pts</option>
-                                        <option value="15">15 pts</option>
-                                        <option value="20">20 pts</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Requisitos previos</label>
-                                    <input type="text" value="Ninguno" disabled style="background: #f1f1f1;">
-                                </div>
-                                <div class="form-group">
-                                    <label>Fecha de publicación</label>
-                                    <input type="date" class="date-input">
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-                <!-- COLUMNA DERECHA: Vista Previa Dinámica y Botón Guardar -->
-                <div class="editor-sidebar-preview">
-                    <div class="preview-card-box">
-                        <div class="preview-title-bar">Vista previa</div>
-                        <div class="preview-content-box">
-                            <h4 id="prevTitle">Saludos básicos</h4>
-                            <div class="preview-badges">
-                                <span class="badge-pill" id="prevLevelBadge">Nivel 1</span>
-                                <span class="badge-pill" id="prevLessonBadge">Lección 3</span>
-                            </div>
-                            <p id="prevDesc">En NicaLingo, los saludos son la base para una buena conversación.</p>
-                            
-                            <div class="preview-question-box" id="previewQuestionContainer"></div>
+                        <div class="form-group">
+                            <label for="lessonDesc">Descripción (Opcional)</label>
+                            <textarea id="lessonDesc" rows="2" placeholder="Esta lección trata de ..."></textarea>
                         </div>
                     </div>
+                </section>
 
-                    <button type="submit" class="btn-guardar-main">Guardar</button>
+                <!-- SECCIÓN 2: Contenido de Lección (Con pestañas internas) -->
+                <section class="editor-card">
+                    <div class="card-header-bar">
+                        <span class="step-badge">2</span>
+                        <h2>Contenido de Lección</h2>
+                    </div>
+                    <div class="card-body inner-tabs-layout">
+                        <!-- Pestañas internas -->
+                        <div class="inner-tabs-menu">
+                            <button type="button" class="tab-btn active" data-tab="tab-texto"><i class="fa-solid fa-t"></i>Enunciado</button>
+                            <button type="button" class="tab-btn" data-tab="tab-tipo"><i class="fa-solid fa-book-bookmark"></i> Tipo de lección</button>
+                            <button type="button" class="tab-btn" data-tab="tab-imagen"><i class="fa-solid fa-folder-open"></i> Multimedia</button>
+                        </div>
+
+                        <!-- Contenido de las pestañas -->
+                        <div class="inner-tabs-content">
+                            <!-- Pestaña 1: Texto -->
+                            <div class="tab-pane active" id="tab-texto">
+                                <label class="pane-label" style="display:block; font-size:13px; font-weight:600; color:#444; margin-bottom:6px;">Contenido</label>
+                                <div class="rich-text-editor-box">
+                                    <div class="rte-toolbar">
+                                        <button type="button"><b>B</b></button>
+                                        <button type="button"><i>I</i></button>
+                                        <button type="button"><u>U</u></button>
+                                        <span class="separator"></span>
+                                        <button type="button"><i class="fa-solid fa-align-left"></i></button>
+                                        <button type="button"><i class="fa-solid fa-align-center"></i></button>
+                                        <button type="button"><i class="fa-solid fa-align-right"></i></button>
+                                        <button type="button"><i class="fa-solid fa-list"></i></button>
+                                        <button type="button"><i class="fa-solid fa-link"></i></button>
+                                    </div>
+                                    <textarea id="questionText" class="rte-textarea" placeholder="Escribe el enunciado o teoría de la lección aquí..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Pestaña 2: Tipo de Lección -->
+                            <div class="tab-pane" id="tab-tipo">
+                                <div class="form-group">
+                                    <label for="questionType">Seleccionar Tipo de Ejercicio</label>
+                                    <select id="questionType">
+                                        <option value="multiple_choice">Selección múltiple</option>
+                                        <option value="order_phrase">Ordenar la frase</option>
+                                        <option value="multimedia">Multimedia</option>
+                                        <option value="introduction">Introducción (Vocabulario)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label id="optionsLabel">Opciones de Respuesta (Marca la casilla de la correcta)</label>
+                                    <div id="optionsContainer" class="options-container"></div>
+                                    
+                                    <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                        <button type="button" id="btnAddOption" class="btn-secondary" style="background: #1c3d98; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                            <i class="fa-solid fa-plus"></i> Añadir Opción
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pestaña 3: Multimedia -->
+                            <div class="tab-pane" id="tab-imagen">
+                                <div class="form-group">
+                                    <label>Archivo Multimedia (Audio o Imagen - Máx 5MB)</label>
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="file" id="generalFile" class="file-input-custom" accept="audio/*,image/*" style="flex: 1;">
+                                        <button type="button" id="btnRemoveFile" style="background: #e53e3e; color: white; border: none; padding: 7px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; display: none;" title="Quitar archivo">
+                                            <i class="fa-solid fa-trash"></i> Quitar
+                                        </button>
+                                    </div>
+                                    <small style="display: block; color: #666; margin-top: 4px; font-size: 11px;">El sistema detectará automáticamente si es una imagen o un audio.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SECCIÓN 3: Configuración de la Lección -->
+                <section class="editor-card">
+                    <div class="card-header-bar">
+                        <span class="step-badge">3</span>
+                        <h2>Configuración de la lección</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label for="xpReward">Recompensa de lección</label>
+                                <select id="xpReward">
+                                    <option value="10">10 pts</option>
+                                    <option value="15">15 pts</option>
+                                    <option value="20">20 pts</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Requisitos previos</label>
+                                <input type="text" value="Ninguno" disabled style="background: #f1f1f1;">
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de publicación</label>
+                                <input type="date" class="date-input">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- COLUMNA DERECHA: Vista Previa Dinámica y Botón Guardar -->
+            <div class="editor-sidebar-preview">
+                <div class="preview-card-box">
+                    <div class="preview-title-bar">Vista previa</div>
+                    <div class="preview-content-box">
+                        <h4 id="prevTitle">Saludos básicos</h4>
+                        <div class="preview-badges">
+                            <span class="badge-pill" id="prevLevelBadge">Nivel 1</span>
+                            <span class="badge-pill" id="prevLessonBadge">Lección 3</span>
+                        </div>
+                        <p id="prevDesc">En NicaLingo, los saludos son la base para una buena conversación.</p>
+                        
+                        <div class="preview-question-box" id="previewQuestionContainer"></div>
+                    </div>
                 </div>
-            </form>
-        </main>
-    </div>
+
+                <button type="submit" class="btn-guardar-main">Guardar</button>
+            </div>
+        </form>
+    </main>
 
     <script type="module" src="../script/add_leccion.js"></script>
 </body>

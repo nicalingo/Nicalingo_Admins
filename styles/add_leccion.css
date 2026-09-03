@@ -1,31 +1,120 @@
-/* Layout general del editor - Ocupa todo el ancho restante */
-.main-content-dashboard {
-    flex: 1;
-    width: 100%; /* Asegura que tome el ancho libre */
-    min-width: 0; /* Vital para que CSS Grid no colapse */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #e2e8f0;
+    --danger-color: #e74c3c;
+    --edit-color: #27ae60;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar de Navegación (Estética exacta del historial) */
+aside {
+    width: 260px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.sidebar-menu a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-logout {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.btn-logout:hover {
+    opacity: 0.9;
+}
+
+/* Contenido Principal */
+main {
+    flex-grow: 1;
     padding: 30px;
-    background-color: #ffd84d;
     overflow-y: auto;
+    background-color: var(--bg-color);
     height: 100vh;
     box-sizing: border-box;
 }
 
-.top-title-header h1 {
-    color: #ffffff;
-    font-size: 28px;
-    font-weight: 800;
+header {
     margin-bottom: 25px;
-    letter-spacing: 0.5px;
 }
 
-/* Grilla Responsiva para PC: Usa todo el ancho con fracciones fluidas */
+header h1 {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+/* Grilla Responsiva para el Editor */
 .editor-grid-layout {
     display: grid;
-    grid-template-columns: 1fr 380px; /* Columna izquierda flexible, derecha fija de buen tamaño */
-    gap: 30px;
+    grid-template-columns: 1fr 380px;
+    gap: 25px;
     align-items: start;
     width: 100%;
-    max-width: 100%; /* Elimina cualquier restricción previa de ancho */
+    max-width: 100%;
     box-sizing: border-box;
     padding-bottom: 50px;
 }
@@ -38,46 +127,51 @@
     min-width: 0;
 }
 
-/* Tarjetas de secciones ocupando todo el ancho de su columna */
+/* Tarjetas de Secciones */
 .editor-card {
-    background: #ffffff;
-    border-radius: 12px;
+    background: var(--card-bg);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
     width: 100%;
     box-sizing: border-box;
 }
 
 .card-header-bar {
-    background: #1c3d98;
-    color: white;
-    padding: 14px 20px;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 15px 20px;
     display: flex;
     align-items: center;
     gap: 12px;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .step-badge {
-    background: rgba(255,255,255,0.2);
-    width: 26px;
-    height: 26px;
+    background: var(--accent-color);
+    color: white;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 12px;
     flex-shrink: 0;
 }
 
 .card-header-bar h2 {
-    font-size: 16px;
+    font-size: 14px;
     margin: 0;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .card-body {
-    padding: 22px;
+    padding: 20px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -100,18 +194,23 @@
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #444;
-    margin-bottom: 6px;
+    color: #64748b;
+    margin-bottom: 5px;
 }
 
 .form-group input, .form-group select, .form-group textarea {
     width: 100%;
-    padding: 10px 14px;
-    border: 1px solid #ddd;
+    padding: 10px;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 14px;
-    box-sizing: border-box;
-    background: #fafafa;
+    outline: none;
+    background: #ffffff;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--accent-color);
 }
 
 /* Pestañas Internas (Sección 2) */
@@ -128,18 +227,18 @@
     gap: 8px;
     width: 180px;
     flex-shrink: 0;
-    border-right: 1px solid #eee;
+    border-right: 1px solid var(--border-color);
     padding-right: 15px;
 }
 
 .tab-btn {
-    background: #f0f4ff;
-    border: none;
-    padding: 11px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
     text-align: left;
     border-radius: 6px;
     font-weight: 600;
-    color: #1c3d98;
+    color: #475569;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -148,9 +247,14 @@
     transition: all 0.2s;
 }
 
+.tab-btn:hover {
+    background: #f1f5f9;
+}
+
 .tab-btn.active {
-    background: #1c3d98;
+    background: var(--accent-color);
     color: white;
+    border-color: var(--accent-color);
 }
 
 .inner-tabs-content {
@@ -168,7 +272,7 @@
 
 /* Editor de Texto Rico Simulado */
 .rich-text-editor-box {
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     overflow: hidden;
     width: 100%;
@@ -177,7 +281,7 @@
 .rte-toolbar {
     background: #f8f9fa;
     padding: 8px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     gap: 6px;
     align-items: center;
@@ -186,11 +290,12 @@
 
 .rte-toolbar button {
     background: transparent;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     padding: 4px 8px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
+    color: #475569;
 }
 
 .rte-toolbar button:hover {
@@ -205,9 +310,10 @@
     padding: 12px !important;
     width: 100% !important;
     box-sizing: border-box;
+    outline: none;
 }
 
-/* Columna Derecha / Vista Previa (Sticky para PC) */
+/* Columna Derecha / Vista Previa */
 .editor-sidebar-preview {
     display: flex;
     flex-direction: column;
@@ -218,20 +324,21 @@
 }
 
 .preview-card-box {
-    background: white;
-    border-radius: 12px;
+    background: var(--card-bg);
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 2px solid #1c3d98;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
 }
 
 .preview-title-bar {
-    background: #1c3d98;
+    background: var(--primary-color);
     color: white;
-    padding: 10px 15px;
+    padding: 12px 15px;
     font-size: 13px;
     font-weight: bold;
     text-align: center;
+    letter-spacing: 0.5px;
 }
 
 .preview-content-box {
@@ -240,8 +347,8 @@
 
 .preview-content-box h4 {
     margin: 0 0 8px 0;
-    color: #333;
-    font-size: 16px;
+    color: var(--primary-color);
+    font-size: 15px;
 }
 
 .preview-badges {
@@ -251,17 +358,17 @@
 }
 
 .badge-pill {
-    background: #fff3cd;
-    color: #856404;
+    background: #e1ecf4;
+    color: #39739d;
     font-size: 11px;
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 10px;
     font-weight: bold;
 }
 
 .preview-content-box p {
     font-size: 12px;
-    color: #666;
+    color: #64748b;
     margin-bottom: 15px;
 }
 
@@ -269,12 +376,12 @@
     background: #f8f9fa;
     padding: 14px;
     border-radius: 8px;
-    border: 1px solid #eee;
+    border: 1px solid var(--border-color);
 }
 
 .preview-question-box p {
     font-size: 13px;
-    color: #333;
+    color: var(--text-color);
     font-weight: bold;
     margin-bottom: 8px;
 }
@@ -288,51 +395,30 @@
     color: #444;
 }
 
-.btn-prev-action {
-    display: block;
-    width: 100%;
-    background: #1c3d98;
-    color: white;
-    border: none;
-    padding: 8px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 12px;
-    margin-top: 12px;
-    cursor: pointer;
-}
-
 /* Botón Guardar Principal */
 .btn-guardar-main {
-    background: #1c3d98;
+    background: var(--edit-color);
     color: white;
     border: none;
-    padding: 16px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 800;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    transition: background 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: opacity 0.2s;
     text-align: center;
     width: 100%;
 }
 
 .btn-guardar-main:hover {
-    background: #152f75;
+    opacity: 0.9;
 }
 
-/* Mascota opcional */
-.mascot-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 5px;
-}
-
-/* --- MEDIA QUERIES PARA DISPOSITIVOS MÓVILES Y TABLETS --- */
+/* --- MEDIA QUERIES --- */
 @media (max-width: 1100px) {
     .editor-grid-layout {
-        grid-template-columns: 1fr; /* En pantallas medianas baja la vista previa */
+        grid-template-columns: 1fr;
     }
     .editor-sidebar-preview {
         position: static;
@@ -340,7 +426,7 @@
 }
 
 @media (max-width: 768px) {
-    .main-content-dashboard {
+    main {
         padding: 15px;
     }
     .form-row-3 {
@@ -354,7 +440,7 @@
         flex-direction: row;
         overflow-x: auto;
         border-right: none;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 10px;
         padding-right: 0;
     }
