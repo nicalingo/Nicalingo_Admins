@@ -357,13 +357,31 @@ if (lessonForm) {
                 levelId = levelData.id
             }
 
+            // Guardamos la lección incluyendo el ID del usuario y el tipo de lección
             const { data: newLesson, error: insertLessonError } = await supabase
-                .from('lessons').insert([{ level_id: levelId, lesson_number: lessonNum, title, description, xp_reward: xpReward, created_by: userId }]).select('id').single()
+                .from('lessons').insert([{ 
+                    level_id: levelId, 
+                    lesson_number: lessonNum, 
+                    title, 
+                    description, 
+                    xp_reward: xpReward, 
+                    created_by: userId,
+                    lesson_type: questionType 
+                }]).select('id').single()
+            
             if (insertLessonError) throw insertLessonError
             const lessonId = newLesson.id
 
+            // Guardamos la pregunta asociada con su tipo correspondiente
             const { data: newQuestion, error: insertQuestionError } = await supabase
-                .from('questions').insert([{ lesson_id: lessonId, question_text: questionText, question_type: questionType, audio_url: finalAudioUrl, order_number: 1 }]).select('id').single()
+                .from('questions').insert([{ 
+                    lesson_id: lessonId, 
+                    question_text: questionText, 
+                    question_type: questionType, 
+                    audio_url: finalAudioUrl, 
+                    order_number: 1 
+                }]).select('id').single()
+            
             if (insertQuestionError) throw insertQuestionError
             const questionId = newQuestion.id
 
