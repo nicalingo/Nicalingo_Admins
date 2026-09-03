@@ -3,94 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NicaLingo - Historial de Lecciones</title>
-    <icon rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
-    <link rel="stylesheet" href="../stylesheet.css">
-    <link rel="stylesheet" href="../styles/add_leccion.css">
-    <link rel="stylesheet" href="../styles/historial_lecciones.css">
-    <link rel="stylesheet" href="../styles/sidebar.css">
+    <title>Historial de Lecciones - NicaLingo Admin</title>
+    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CORREGIDO: Subir un nivel con '../' para encontrar la carpeta styles -->
+    <link rel="stylesheet" href="../styles/historial_lecciones.css">
 </head>
 <body>
 
-    <div class="admin-layout">
-        <!-- Panel Lateral Desplegable -->
-        <nav class="sidebar" id="sidebar">
-            <div>
-                <div class="sidebar-brand">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <i class="fa-solid fa-graduation-cap"></i> 
-                        <span>NicaLingo Admin</span>
-                    </div>
-                    <button id="toggleSidebar" class="btn-toggle-sidebar" title="Ocultar/Mostrar menú">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                </div>
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="add_leccion.html">
-                            <i class="fa-solid fa-plus-circle"></i> 
-                            <span>Agregar Lección</span>
-                        </a>
-                    </li>
-                    <li class="active">
-                        <a href="historial_lecciones.html">
-                            <i class="fa-solid fa-list-check"></i> 
-                            <span>Historial de Lecciones</span>
-                        </a>
-                    </li>
-                </ul>
+    <!-- Menú Lateral -->
+    <aside>
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+        </div>
+        <ul class="sidebar-menu">
+            <!-- Asegúrate de que los enlaces apunten a los nombres reales de tus archivos en 'screens/' -->
+            <li><a href="home.html"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
+            <li><a href="historial_lecciones.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+            <li><a href="admin_user.html"><i class="fa-solid fa-gear"></i> Ajustes</a></li>
+        </ul>
+        <button id="btnLogout" class="btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+        </button>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main>
+        <header>
+            <h1>Gestión y Historial de Lecciones</h1>
+        </header>
+
+        <!-- Filtros Dinámicos -->
+        <section class="filters-container">
+            <div class="filter-group">
+                <label for="filterLevel">Nivel</label>
+                <select id="filterLevel">
+                    <option value="">Todos los niveles</option>
+                    <option value="1">Nivel 1</option>
+                    <option value="2">Nivel 2</option>
+                    <option value="3">Nivel 3</option>
+                    <option value="4">Nivel 4</option>
+                    <option value="5">Nivel 5</option>
+                </select>
             </div>
-            <div class="sidebar-footer">
-                <button id="btnLogout" class="btn-sidebar-logout">
-                    <i class="fa-solid fa-right-from-bracket"></i> 
-                    <span>Salir</span>
-                </button>
+
+            <div class="filter-group">
+                <label for="filterLessonNum">Número de Lección</label>
+                <input type="number" id="filterLessonNum" placeholder="Ej. 1, 2...">
             </div>
-        </nav>
 
-        <!-- Contenido Principal -->
-        <main class="main-content">
-            <div class="dashboard-container" style="box-shadow: none; padding: 0; background: transparent;">
-                <div class="header-dash">
-                    <h2>Historial de Mis Lecciones</h2>
-                </div>
-
-                <p class="subtitle-desc">Aquí puedes consultar, editar o eliminar las lecciones que has registrado en la plataforma.</p>
-
-                <div id="loadingMessage">
-                    Cargando historial...
-                </div>
-
-                <table class="history-table" id="historyTable" style="display: none;">
-                    <thead>
-                        <tr>
-                            <th>Nivel</th>
-                            <th>Lección #</th>
-                            <th>Título</th>
-                            <th>Descripción</th>
-                            <th>XP</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTableBody">
-                        <!-- Se llena dinámicamente con JavaScript -->
-                    </tbody>
-                </table>
+            <div class="filter-group">
+                <label for="filterCreator">Creador (Correo)</label>
+                <input type="text" id="filterCreator" placeholder="Filtrar por autor">
             </div>
-        </main>
-    </div>
+        </section>
 
-    <script>
-        // Script rápido para el menú colapsable (mantiene la lógica intacta)
-        const toggleSidebarBtn = document.getElementById('toggleSidebar');
-        const sidebar = document.getElementById('sidebar');
-        if (toggleSidebarBtn && sidebar) {
-            toggleSidebarBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('collapsed');
-            });
-        }
-    </script>
+        <!-- Tabla de Datos -->
+        <section class="table-container">
+            <div id="loadingMessage">
+                <i class="fa-solid fa-spinner fa-spin"></i> Cargando lecciones...
+            </div>
+            
+            <table id="historyTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Nivel / Idioma</th>
+                        <th>Lección</th>
+                        <th>Título</th>
+                        <th>Descripción</th>
+                        <th>Creador</th>
+                        <th>Recompensa</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- Las filas se renderizan dinámicamente desde el archivo JS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- CORREGIDO: Subir un nivel con '../' para encontrar la carpeta script -->
     <script type="module" src="../script/historial_lecciones.js"></script>
 </body>
 </html>

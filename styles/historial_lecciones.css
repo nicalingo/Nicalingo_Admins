@@ -1,62 +1,210 @@
-/* Estilos específicos para la pantalla de historial */
+:root {
+    --primary-color: #2c3e50;
+    --accent-color: #3498db;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --border-color: #e2e8f0;
+    --danger-color: #e74c3c;
+    --edit-color: #27ae60;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar de Navegación */
+aside {
+    width: 260px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.sidebar-brand {
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.sidebar-menu a {
+    color: #cbd5e1;
+    text-decoration: none;
+    padding: 12px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+.btn-logout {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.btn-logout:hover {
+    opacity: 0.9;
+}
+
+/* Contenido Principal */
+main {
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+header {
+    margin-bottom: 25px;
+}
+
+header h1 {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+/* Sección de Filtros Dinámicos */
+.filters-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.filter-group select, .filter-group input {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-group select:focus, .filter-group input:focus {
+    border-color: var(--accent-color);
+}
+
+/* Tabla de Historial */
+.table-container {
+    background: var(--card-bg);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
 .history-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    text-align: left;
+    display: none;
 }
 
 .history-table th, 
 .history-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
     font-size: 14px;
 }
 
 .history-table th {
-    background-color: #f8f9fa;
-    color: #333;
-    font-weight: bold;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
 }
 
 .history-table tr:hover {
-    background-color: #f1f2f6;
-}
-
-.nav-links {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.btn-link {
-    text-decoration: none;
-    background: #4a6fa5;
-    color: white;
-    padding: 8px 14px;
-    border-radius: 4px;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn-link:hover {
-    background: #3b5984;
+    background-color: #f8fafc;
 }
 
 #loadingMessage {
     text-align: center;
-    padding: 20px;
-    font-weight: bold;
+    padding: 40px;
+    color: #64748b;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Componentes internos de celdas */
+.sub-text {
     color: #666;
 }
 
-/* Botones de acción en la tabla de historial */
+.creator-email {
+    color: #444;
+}
+
+.xp-badge {
+    background: #e1ecf4;
+    color: #39739d;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/* Botones de acción en tabla */
 .action-buttons {
     display: flex;
     gap: 8px;
@@ -64,25 +212,25 @@
 
 .btn-action {
     border: none;
-    padding: 6px 10px;
-    border-radius: 4px;
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: white;
-    font-size: 13px;
+    transition: opacity 0.2s;
+}
+
+.btn-action:hover {
+    opacity: 0.85;
 }
 
 .btn-edit {
-    background-color: #f39c12;
-}
-
-.btn-edit:hover {
-    background-color: #d68910;
+    background-color: var(--edit-color);
 }
 
 .btn-delete {
-    background-color: #e74c3c;
-}
-
-.btn-delete:hover {
-    background-color: #c0392b;
+    background-color: var(--danger-color);
 }

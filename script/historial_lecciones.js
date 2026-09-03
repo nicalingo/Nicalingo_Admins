@@ -1,13 +1,14 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL = 'https://xrisuvdfdnpzudbaqzbv.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
+const SUPABASE_PUBLISH_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISH_KEY)
 
 let currentUserSession = null
+let currentUserRole = null
 
-// 1. Validar sesión, permisos y almacenar la sesión actual
+// 1. Validar sesión, permisos y almacenar rol y sesión actual
 async function checkAuthAndRole() {
     const { data: { session } } = await supabase.auth.getSession()
 
@@ -29,6 +30,7 @@ async function checkAuthAndRole() {
         return false
     }
 
+    currentUserRole = userRole
     return true
 }
 
@@ -47,14 +49,14 @@ async function deleteLesson(lessonId) {
         if (error) throw error
 
         alert('Lección eliminada correctamente.')
-        loadLessonHistory() // Recargar la tabla
+        loadLessonHistory()
     } catch (err) {
         console.error('Error al eliminar:', err.message)
         alert('Hubo un error al eliminar la lección: ' + err.message)
     }
 }
 
-// 3. Cargar las lecciones creadas desde Supabase filtrando por el usuario logueado
+// 3. Cargar las lecciones con filtros dinámicos (Nivel, Número) y control por roles
 async function loadLessonHistory() {
     const isAuthorized = await checkAuthAndRole()
     if (!isAuthorized) return
@@ -67,10 +69,11 @@ async function loadLessonHistory() {
     historyTable.style.display = 'none'
 
     try {
-        // Obtenemos el ID del usuario actual de la sesión ya validada
-        const currentUserId = currentUserSession.user.id
+        const filterLevel = document.getElementById('filterLevel')?.value
+        const filterLessonNum = document.getElementById('filterLessonNum')?.value
 
-        const { data: lessons, error } = await supabase
+        // Consulta optimizada para evitar errores de relación en la caché de Supabase
+        let query = supabase
             .from('lessons')
             .select(`
                 id,
@@ -78,7 +81,9 @@ async function loadLessonHistory() {
                 title,
                 description,
                 xp_reward,
-                levels (
+                created_by,
+                levels!inner (
+                    id,
                     level_number,
                     title,
                     languages (
@@ -86,15 +91,29 @@ async function loadLessonHistory() {
                     )
                 )
             `)
-            .eq('created_by', currentUserId) // <--- Filtro estricto para mostrar solo las del usuario logueado
-            .order('id', { ascending: false })
+
+        // Regla de roles: Si es 'editor', solo ve sus lecciones. Si es 'admin', ve todas.
+        if (currentUserRole === 'editor') {
+            query = query.eq('created_by', currentUserSession.user.id)
+        }
+
+        // Filtros opcionales adicionales
+        if (filterLevel) {
+            query = query.eq('levels.level_number', filterLevel)
+        }
+
+        if (filterLessonNum) {
+            query = query.eq('lesson_number', filterLessonNum)
+        }
+
+        const { data: lessons, error } = await query.order('id', { ascending: false })
 
         if (error) throw error
 
         loadingMsg.style.display = 'none'
 
         if (!lessons || lessons.length === 0) {
-            loadingMsg.textContent = 'No hay lecciones registradas por ti todavía.'
+            loadingMsg.textContent = 'No se encontraron lecciones con los filtros seleccionados.'
             loadingMsg.style.display = 'block'
             return
         }
@@ -104,13 +123,15 @@ async function loadLessonHistory() {
             const tr = document.createElement('tr')
             const levelNum = lesson.levels ? lesson.levels.level_number : 'N/A'
             const langName = lesson.levels && lesson.levels.languages ? lesson.levels.languages.name : 'Idioma general'
+            const creatorDisplay = lesson.created_by ? lesson.created_by.substring(0, 8) + '...' : 'Desconocido'
 
             tr.innerHTML = `
-                <td>Nivel ${levelNum} <br><small style="color:#666;">(${langName})</small></td>
+                <td>Nivel ${levelNum} <br><small class="sub-text">(${langName})</small></td>
                 <td>Lección ${lesson.lesson_number}</td>
                 <td><strong>${lesson.title}</strong></td>
                 <td>${lesson.description || 'Sin descripción'}</td>
-                <td><span style="background: #e1ecf4; color: #39739d; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">+${lesson.xp_reward} XP</span></td>
+                <td><small class="creator-email" title="${lesson.created_by}">${creatorDisplay}</small></td>
+                <td><span class="xp-badge">+${lesson.xp_reward} XP</span></td>
                 <td>
                     <div class="action-buttons">
                         <button class="btn-action btn-edit" title="Editar lección" data-id="${lesson.id}">
@@ -123,7 +144,6 @@ async function loadLessonHistory() {
                 </td>
             `
 
-            // Asignar eventos a los botones de la fila
             tr.querySelector('.btn-delete').addEventListener('click', () => {
                 deleteLesson(lesson.id)
             })
@@ -143,9 +163,19 @@ async function loadLessonHistory() {
     }
 }
 
+// 4. Escuchar eventos de cambio en los filtros para recargar automáticamente
+['filterLevel', 'filterLessonNum', 'filterCreator'].forEach(id => {
+    const element = document.getElementById(id)
+    if (element) {
+        element.addEventListener('input', loadLessonHistory)
+        element.addEventListener('change', loadLessonHistory)
+    }
+})
+
+// Cargar al iniciar la página
 loadLessonHistory()
 
-// 4. Botón de Cerrar Sesión
+// 5. Botón de Cerrar Sesión
 document.getElementById('btnLogout').addEventListener('click', async () => {
     await supabase.auth.signOut()
     window.location.href = '../index.html'
