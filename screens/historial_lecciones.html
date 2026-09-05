@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <icon rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
+    <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
     <title>Historial de Lecciones - NicaLingo Admin</title>
     <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,11 +19,13 @@
             <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
         </div>
         <ul class="sidebar-menu">
-            <!-- Asegúrate de que los enlaces apunten a los nombres reales de tus archivos en 'screens/' -->
             <li><a href="#"><i class="fa-solid fa-house"></i> Inicio</a></li>
             <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
+            <!-- Agregado correctamente al menú lateral -->
+            <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
+            <li><a href="edit_book.html"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
             <li><a href="historial_lecciones.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-            <li><a href="#"><i class="fa-solid fa-gear"></i> Ajustes</a></li>
+            <li><a href="admin_user.html"><i class="fa-solid fa-users"></i> Administradores</a></li>
         </ul>
         <button id="btnLogout" class="btn-logout">
             <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión

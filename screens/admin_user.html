@@ -1,79 +1,70 @@
-/* styles/add_leccion.css */
-body {
-  background-color: var(--background-light, #F8F9FA);
-  font-family: 'Inter', sans-serif;
-  margin: 0;
-  padding: 40px 20px;
-  display: block;
-}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Administrar Usuarios</title>
+    <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/add_leccion.css">
+</head>
+<body>
 
-.dashboard-container {
-  max-width: 600px;
-  margin: 0 auto;
-  background: white;
-  padding: 30px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-}
+    <aside>
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
+            <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
+            <li><a href="edit_book.html"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
+            <li><a href="historial_lecciones.html"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+            <li><a href="admin_user.html" class="active"><i class="fa-solid fa-users"></i> Administradores</a></li>
+        </ul>
+        <button id="btnLogout" class="btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+        </button>
+    </aside>
 
-.header-dash {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
+    <main>
+        <header>
+            <h1>AJUSTES Y GESTIÓN DE USUARIOS</h1>
+        </header>
 
-.header-dash h2 {
-  color: var(--primary-blue, #253B83);
-  margin: 0;
-}
+        <div id="adminSection" style="display: none;">
+            <section class="editor-card" style="margin-bottom: 20px;">
+                <div class="card-header-bar">
+                    <span class="step-badge">1</span>
+                    <h2>Otorgar o Modificar Permisos de Usuario</h2>
+                </div>
+                <div class="card-body">
+                    <form id="roleForm">
+                        <div class="form-group">
+                            <label for="userEmail">Correo del usuario</label>
+                            <input type="email" id="userEmail" placeholder="usuario@correo.com" required>
+                        </div>
 
-.btn-logout {
-  background-color: #ff4d4d;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 15px;
-  cursor: pointer;
-  font-weight: bold;
-}
+                        <div class="form-group">
+                            <label for="newRole">Asignar Rol</label>
+                            <select id="newRole" required>
+                                <option value="editor">Editor</option>
+                                <option value="admin">Administrador</option>
+                                <option value="user">Usuario Estándar</option>
+                            </select>
+                        </div>
 
-.form-group {
-  margin-bottom: 15px;
-}
+                        <button type="submit" class="btn-guardar-main" style="margin-top: 10px;">Actualizar Rol</button>
+                    </form>
+                </div>
+            </section>
+        </div>
 
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: var(--text-dark, #1C1B1F);
-}
+        <div id="unauthorizedSection" style="display: none; padding: 20px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; color: #856404;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Acceso restringido. Solo los administradores pueden gestionar los permisos de otros usuarios.
+        </div>
+    </main>
 
-.form-group input, 
-.form-group select, 
-.form-group textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  outline: none;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.btn-submit {
-  background-color: var(--secondary-sky-blue, #0090D6);
-  color: white;
-  border: none;
-  padding: 12px;
-  width: 100%;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.btn-submit:hover {
-  background-color: #007bb8;
-}
+    <script type="module" src="../script/admin_user.js"></script>
+</body>
+</html>

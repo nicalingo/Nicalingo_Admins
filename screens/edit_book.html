@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Administrar Libros / Historias</title>
+    <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/add_leccion.css">
+    <style>
+        .empty-library-state {
+            text-align: center;
+            padding: 50px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            margin-top: 20px;
+            border: 2px dashed #e2e8f0;
+        }
+        .empty-library-state img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 15px;
+            animation: floatMascot 3s ease-in-out infinite;
+        }
+        @keyframes floatMascot {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .empty-library-state h3 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+        .empty-library-state p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .btn-create-first {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #1c3d98;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn-create-first:hover {
+            background: #15307b;
+        }
+    </style>
+</head>
+<body>
+
+    <aside>
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class="fa-solid fa-house"></i> Inicio</a></li>
+            <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
+            <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
+            <li><a href="edit_book.html" class="active"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
+            <li><a href="historial_lecciones.html"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
+            <li><a href="admin_user.html"><i class="fa-solid fa-users"></i> Administradores</a></li>
+        </ul>
+        <button id="btnLogout" class="btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+        </button>
+    </aside>
+
+    <main>
+        <header>
+            <h1>ADMINISTRACIÓN DE LIBROS E HISTORIAS</h1>
+        </header>
+
+        <section class="filters-container">
+            <div class="filter-group">
+                <label for="searchBook">Buscar por Título</label>
+                <input type="text" id="searchBook" placeholder="Escribe para buscar...">
+            </div>
+        </section>
+
+        <div class="table-container">
+            <div id="loadingMessage" style="text-align: center; padding: 30px; color: #64748b;">
+                <i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> Cargando el conocimiento ancestral...
+            </div>
+            <table class="history-table" id="booksTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Portada</th>
+                        <th>Título / Traducción</th>
+                        <th>Etiqueta</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="booksTableBody">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script type="module" src="../script/edit_book.js"></script>
+</body>
+</html>
