@@ -258,7 +258,6 @@ function renderOptionsInputs() {
 // --- FUNCIÓN PARA CARGAR DATOS EN MODO EDICIÓN ---
 async function loadLessonDataForEdit(lessonId) {
     try {
-        // Consultar la lección, su nivel relacionado y sus preguntas/opciones
         const { data: lesson, error: lessonErr } = await supabase
             .from('lessons')
             .select(`
@@ -284,7 +283,6 @@ async function loadLessonDataForEdit(lessonId) {
 
         if (lessonErr || !lesson) throw new Error('No se pudo encontrar la lección solicitada.');
 
-        // Rellenar campos de información general
         document.getElementById('lessonTitle').value = lesson.title || '';
         document.getElementById('lessonDesc').value = lesson.description || '';
         document.getElementById('xpReward').value = lesson.xp_reward || 10;
@@ -295,24 +293,20 @@ async function loadLessonDataForEdit(lessonId) {
             document.getElementById('levelNumber').value = lesson.levels.level_number || 1;
         }
 
-        // Actualizar vistas previas generales
         document.getElementById('prevTitle').textContent = lesson.title || 'Saludos básicos';
         document.getElementById('prevDesc').textContent = lesson.description || 'Descripción de la lección...';
         document.getElementById('prevLevelBadge').textContent = `Nivel ${lesson.levels?.level_number || 1}`;
         document.getElementById('prevLessonBadge').textContent = `Lección ${lesson.lesson_number || 1}`;
 
-        // Cargar datos de la pregunta si existe
         if (lesson.questions && lesson.questions.length > 0) {
             const q = lesson.questions[0];
             document.getElementById('questionText').value = q.question_text || '';
             document.getElementById('questionType').value = q.question_type || 'multiple_choice';
 
-            // Renderizar las opciones según el tipo de ejercicio
-            renderOptionsInputs();
-            const container = document.getElementById('optionsContainer');
-            container.innerHTML = ''; // Limpiar predeterminados
-
             if (q.question_type === 'order_phrase') {
+                renderOptionsInputs();
+                const container = document.getElementById('optionsContainer');
+                container.innerHTML = '';
                 q.question_options.forEach(opt => {
                     if (opt.is_correct) {
                         addOrderPhraseRow(opt.option_text);
@@ -321,15 +315,16 @@ async function loadLessonDataForEdit(lessonId) {
                     }
                 });
             } else if (q.question_type === 'order_word') {
+                renderOptionsInputs();
                 const correctOpt = q.question_options.find(o => o.is_correct);
-                const row = document.createElement('div');
-                row.className = 'dynamic-row';
-                row.innerHTML = `
-                    <input type="text" placeholder="Escribe la única palabra correcta" id="singleWordInput" class="opt-text single-word-val" value="${correctOpt ? correctOpt.option_text : ''}" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
-                    <small style="display: block; color: #64748b; margin-top: 6px; font-size: 11px;"><i class="fa-solid fa-circle-info"></i> No debe contener espacios, guiones bajos ni símbolos.</small>
-                `;
-                container.appendChild(row);
+                const singleInput = document.getElementById('singleWordInput');
+                if (singleInput && correctOpt) {
+                    singleInput.value = correctOpt.option_text || '';
+                }
             } else if (q.question_type === 'introduction') {
+                renderOptionsInputs();
+                const container = document.getElementById('optionsContainer');
+                container.innerHTML = '';
                 q.question_options.forEach(opt => {
                     const parts = opt.option_text.split(':');
                     const w = parts[0] ? parts[0].trim() : '';
@@ -337,6 +332,9 @@ async function loadLessonDataForEdit(lessonId) {
                     addIntroductionRow(w, t);
                 });
             } else {
+                renderOptionsInputs();
+                const container = document.getElementById('optionsContainer');
+                container.innerHTML = '';
                 q.question_options.forEach((opt, idx) => {
                     addMultipleChoiceRow(opt.option_text, opt.is_correct);
                 });
@@ -345,7 +343,6 @@ async function loadLessonDataForEdit(lessonId) {
             renderOptionsInputs();
         }
 
-        // Cambiar el texto del botón de guardar para indicar actualización
         const submitBtn = document.querySelector('.btn-guardar-main');
         if (submitBtn) submitBtn.textContent = 'Actualizar Lección';
 
@@ -529,11 +526,21 @@ function updatePreviewExercise() {
             <button type="button" class="btn-prev-action">Comprobar Frase</button>
         `
     } else if (type === 'order_word') {
+        const singleInput = document.getElementById('singleWordInput');
+        const wordVal = singleInput && singleInput.value.trim() !== '' ? singleInput.value.trim() : 'naksa';
+        
+        const letters = wordVal.split('').sort(() => Math.random() - 0.5);
+        let lettersHtml = '';
+        letters.forEach(letter => {
+            lettersHtml += `<span style="background: #1c3d98; color: white; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block;">${letter}</span>`;
+        });
+
         previewContainer.innerHTML = `
             ${mediaHtml}
             <p><b>1.</b> ${currentQuestionText}</p>
-            <div style="margin-bottom: 10px;">
-                <input type="text" disabled placeholder="Escribe la palabra..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+            <p style="font-size: 10px; color: #666; margin-bottom: 6px;">(Letras desordenadas)</p>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                ${lettersHtml}
             </div>
             <button type="button" class="btn-prev-action">Comprobar Palabra</button>
         `
@@ -625,7 +632,6 @@ if (lessonForm) {
             }
         }
 
-        // Validación estricta para order_word: una sola palabra limpia
         const singleWordRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+$/;
 
         if (questionType === 'order_word') {
@@ -669,7 +675,6 @@ if (lessonForm) {
                 }
             }
 
-            // Gestionar nivel
             let { data: levelData, error: levelError } = await supabase
                 .from('levels').select('id').eq('language_id', languageId).eq('level_number', levelNum).single()
 
@@ -686,7 +691,6 @@ if (lessonForm) {
             let lessonId;
 
             if (editLessonId) {
-                // MODO ACTUALIZACIÓN
                 const { error: updateLessonError } = await supabase
                     .from('lessons')
                     .update({ 
@@ -702,11 +706,9 @@ if (lessonForm) {
                 if (updateLessonError) throw updateLessonError;
                 lessonId = editLessonId;
 
-                // Eliminar preguntas y opciones anteriores para reemplazarlas limpiamente
                 await supabase.from('questions').delete().eq('lesson_id', lessonId);
 
             } else {
-                // MODO CREACIÓN NUEVA
                 const { data: newLesson, error: insertLessonError } = await supabase
                     .from('lessons').insert([{ 
                         level_id: levelId, 
@@ -722,7 +724,6 @@ if (lessonForm) {
                 lessonId = newLesson.id
             }
 
-            // Insertar pregunta
             const { data: newQuestion, error: insertQuestionError } = await supabase
                 .from('questions').insert([{ 
                     lesson_id: lessonId, 
