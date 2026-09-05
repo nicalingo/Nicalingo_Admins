@@ -56,7 +56,7 @@ async function deleteLesson(lessonId) {
     }
 }
 
-// 3. Cargar las lecciones con filtros dinámicos (Nivel, Número) y control por roles
+// 3. Cargar las lecciones con filtros dinámicos y resolución de apodos de perfiles
 async function loadLessonHistory() {
     const isAuthorized = await checkAuthAndRole()
     if (!isAuthorized) return
@@ -72,7 +72,6 @@ async function loadLessonHistory() {
         const filterLevel = document.getElementById('filterLevel')?.value
         const filterLessonNum = document.getElementById('filterLessonNum')?.value
 
-        // Consulta optimizada para evitar errores de relación en la caché de Supabase
         let query = supabase
             .from('lessons')
             .select(`
@@ -92,12 +91,10 @@ async function loadLessonHistory() {
                 )
             `)
 
-        // Regla de roles: Si es 'editor', solo ve sus lecciones. Si es 'admin', ve todas.
         if (currentUserRole === 'editor') {
             query = query.eq('created_by', currentUserSession.user.id)
         }
 
-        // Filtros opcionales adicionales
         if (filterLevel) {
             query = query.eq('levels.level_number', filterLevel)
         }
@@ -118,19 +115,41 @@ async function loadLessonHistory() {
             return
         }
 
+        // Obtener de forma única todos los IDs de creadores para buscar sus nicknames en la tabla profiles
+        const creatorIds = [...new Set(lessons.map(l => l.created_by).filter(Boolean))]
+        let profilesMap = {}
+
+        if (creatorIds.length > 0) {
+            const { data: profilesData, error: profilesError } = await supabase
+                .from('profiles')
+                .select('id, nickname')
+                .in('id', creatorIds)
+
+            if (!profilesError && profilesData) {
+                profilesData.forEach(p => {
+                    profilesMap[p.id] = p.nickname
+                })
+            }
+        }
+
         tableBody.innerHTML = ''
         lessons.forEach(lesson => {
             const tr = document.createElement('tr')
             const levelNum = lesson.levels ? lesson.levels.level_number : 'N/A'
             const langName = lesson.levels && lesson.levels.languages ? lesson.levels.languages.name : 'Idioma general'
-            const creatorDisplay = lesson.created_by ? lesson.created_by.substring(0, 8) + '...' : 'Desconocido'
+            
+            // Buscar el apodo en el mapa de perfiles; si no existe o está vacío, mostrar el ID (o un trozo de él)
+            const authorId = lesson.created_by || 'Desconocido'
+            const authorNickname = (profilesMap[authorId] && profilesMap[authorId].trim() !== '') 
+                ? profilesMap[authorId] 
+                : authorId
 
             tr.innerHTML = `
                 <td>Nivel ${levelNum} <br><small class="sub-text">(${langName})</small></td>
                 <td>Lección ${lesson.lesson_number}</td>
                 <td><strong>${lesson.title}</strong></td>
                 <td>${lesson.description || 'Sin descripción'}</td>
-                <td><small class="creator-email" title="${lesson.created_by}">${creatorDisplay}</small></td>
+                <td><small class="creator-email" title="${authorId}">${authorNickname}</small></td>
                 <td><span class="xp-badge">+${lesson.xp_reward} XP</span></td>
                 <td>
                     <div class="action-buttons">

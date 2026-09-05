@@ -11,6 +11,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
 let cachedMediaUrl = null;
 let cachedMediaType = null;
 
+// Detectar si estamos en modo edición mediante el parámetro ?edit=ID en la URL
+const urlParams = new URLSearchParams(window.location.search);
+const editLessonId = urlParams.get('edit');
+
 // --- AUTENTICACIÓN Y ROLES ---
 async function checkAuthAndRole() {
     const { data: { session } } = await supabase.auth.getSession()
@@ -30,6 +34,15 @@ async function checkAuthAndRole() {
         alert('Permiso denegado. No eres editor ni administrador.')
         await supabase.auth.signOut()
         window.location.href = '../index.html'
+        return
+    }
+
+    // Una vez autenticado y validado el rol, cargamos los idiomas y si hay ID de edición, cargamos los datos
+    await loadLanguages()
+    if (editLessonId) {
+        await loadLessonDataForEdit(editLessonId)
+    } else {
+        renderOptionsInputs()
     }
 }
 
@@ -57,20 +70,8 @@ async function loadLanguages() {
     }
 }
 
-loadLanguages()
-
 // --- GESTIÓN DE OPCIONES DINÁMICAS ---
-function reindexOrderRows() {
-    const rows = document.querySelectorAll('#optionsContainer .correct-row')
-    rows.forEach((row, idx) => {
-        const span = row.querySelector('span')
-        const input = row.querySelector('input.opt-text')
-        if (span) span.textContent = `${idx + 1}.`
-        if (input) input.placeholder = `Palabra correcta ${idx + 1}`
-    })
-}
-
-function addOrderOptionRow(value = '') {
+function addOrderPhraseRow(value = '') {
     const container = document.getElementById('optionsContainer')
     const rowCount = container.querySelectorAll('.correct-row').length + 1
 
@@ -78,17 +79,16 @@ function addOrderOptionRow(value = '') {
     row.className = 'dynamic-row correct-row'
     row.innerHTML = `
         <span>${rowCount}.</span>
-        <input type="text" placeholder="Palabra correcta ${rowCount}" class="opt-text correct-val" value="${value}" required>
+        <input type="text" placeholder="Palabra de la frase ${rowCount}" class="opt-text correct-val" value="${value}" required>
         <button type="button" class="btn-remove-row"><i class="fa-solid fa-trash"></i></button>
     `
 
     row.querySelector('.btn-remove-row').addEventListener('click', () => {
         if (container.querySelectorAll('.correct-row').length > 2) {
             row.remove()
-            reindexOrderRows()
             updatePreviewExercise()
         } else {
-            alert('Debes tener al menos 2 bloques correctos.')
+            alert('Debes tener al menos 2 palabras en la frase.')
         }
     })
 
@@ -192,7 +192,7 @@ function renderOptionsInputs() {
     if (oldBtnDistractor) oldBtnDistractor.remove()
 
     if (questionType === 'order_phrase') {
-        if (label) label.textContent = 'Frase Correcta y Comodines (Palabras trampa)'
+        if (label) label.textContent = 'Palabras de la Frase y Comodines (Trampas)'
         
         if (btnAdd) {
             btnAdd.style.display = 'inline-flex'
@@ -200,7 +200,7 @@ function renderOptionsInputs() {
         }
 
         for (let i = 0; i < 3; i++) {
-            addOrderOptionRow()
+            addOrderPhraseRow()
         }
 
         const btnDistractor = document.createElement('button')
@@ -213,6 +213,21 @@ function renderOptionsInputs() {
         if (btnAdd && btnAdd.parentNode) {
             btnAdd.parentNode.appendChild(btnDistractor)
         }
+
+    } else if (questionType === 'order_word') {
+        if (label) label.textContent = 'Palabra Correcta (Única palabra)'
+        
+        if (btnAdd) {
+            btnAdd.style.display = 'none' 
+        }
+
+        const row = document.createElement('div')
+        row.className = 'dynamic-row'
+        row.innerHTML = `
+            <input type="text" placeholder="Escribe la única palabra correcta (Ej. Hola)" id="singleWordInput" class="opt-text single-word-val" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+            <small style="display: block; color: #64748b; margin-top: 6px; font-size: 11px;"><i class="fa-solid fa-circle-info"></i> No debe contener espacios, guiones bajos ni símbolos.</small>
+        `
+        container.appendChild(row)
 
     } else if (questionType === 'introduction') {
         if (label) label.textContent = 'Listado de Vocabulario (Palabra y Traducción)'
@@ -240,15 +255,118 @@ function renderOptionsInputs() {
     updatePreviewExercise()
 }
 
+// --- FUNCIÓN PARA CARGAR DATOS EN MODO EDICIÓN ---
+async function loadLessonDataForEdit(lessonId) {
+    try {
+        // Consultar la lección, su nivel relacionado y sus preguntas/opciones
+        const { data: lesson, error: lessonErr } = await supabase
+            .from('lessons')
+            .select(`
+                *,
+                levels (
+                    language_id,
+                    level_number
+                ),
+                questions (
+                    id,
+                    question_text,
+                    question_type,
+                    audio_url,
+                    image_url,
+                    question_options (
+                        option_text,
+                        is_correct
+                    )
+                )
+            `)
+            .eq('id', lessonId)
+            .single();
+
+        if (lessonErr || !lesson) throw new Error('No se pudo encontrar la lección solicitada.');
+
+        // Rellenar campos de información general
+        document.getElementById('lessonTitle').value = lesson.title || '';
+        document.getElementById('lessonDesc').value = lesson.description || '';
+        document.getElementById('xpReward').value = lesson.xp_reward || 10;
+        document.getElementById('lessonNumber').value = lesson.lesson_number || 1;
+
+        if (lesson.levels) {
+            document.getElementById('languageSelect').value = lesson.levels.language_id || '';
+            document.getElementById('levelNumber').value = lesson.levels.level_number || 1;
+        }
+
+        // Actualizar vistas previas generales
+        document.getElementById('prevTitle').textContent = lesson.title || 'Saludos básicos';
+        document.getElementById('prevDesc').textContent = lesson.description || 'Descripción de la lección...';
+        document.getElementById('prevLevelBadge').textContent = `Nivel ${lesson.levels?.level_number || 1}`;
+        document.getElementById('prevLessonBadge').textContent = `Lección ${lesson.lesson_number || 1}`;
+
+        // Cargar datos de la pregunta si existe
+        if (lesson.questions && lesson.questions.length > 0) {
+            const q = lesson.questions[0];
+            document.getElementById('questionText').value = q.question_text || '';
+            document.getElementById('questionType').value = q.question_type || 'multiple_choice';
+
+            // Renderizar las opciones según el tipo de ejercicio
+            renderOptionsInputs();
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = ''; // Limpiar predeterminados
+
+            if (q.question_type === 'order_phrase') {
+                q.question_options.forEach(opt => {
+                    if (opt.is_correct) {
+                        addOrderPhraseRow(opt.option_text);
+                    } else {
+                        addDistractorRow(opt.option_text);
+                    }
+                });
+            } else if (q.question_type === 'order_word') {
+                const correctOpt = q.question_options.find(o => o.is_correct);
+                const row = document.createElement('div');
+                row.className = 'dynamic-row';
+                row.innerHTML = `
+                    <input type="text" placeholder="Escribe la única palabra correcta" id="singleWordInput" class="opt-text single-word-val" value="${correctOpt ? correctOpt.option_text : ''}" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+                    <small style="display: block; color: #64748b; margin-top: 6px; font-size: 11px;"><i class="fa-solid fa-circle-info"></i> No debe contener espacios, guiones bajos ni símbolos.</small>
+                `;
+                container.appendChild(row);
+            } else if (q.question_type === 'introduction') {
+                q.question_options.forEach(opt => {
+                    const parts = opt.option_text.split(':');
+                    const w = parts[0] ? parts[0].trim() : '';
+                    const t = parts[1] ? parts[1].trim() : '';
+                    addIntroductionRow(w, t);
+                });
+            } else {
+                q.question_options.forEach((opt, idx) => {
+                    addMultipleChoiceRow(opt.option_text, opt.is_correct);
+                });
+            }
+        } else {
+            renderOptionsInputs();
+        }
+
+        // Cambiar el texto del botón de guardar para indicar actualización
+        const submitBtn = document.querySelector('.btn-guardar-main');
+        if (submitBtn) submitBtn.textContent = 'Actualizar Lección';
+
+        updatePreviewExercise();
+
+    } catch (err) {
+        console.error('Error al cargar lección para editar:', err.message);
+        alert('Hubo un error al cargar los datos de la lección: ' + err.message);
+        renderOptionsInputs();
+    }
+}
+
 const btnAddOpt = document.getElementById('btnAddOption')
 if (btnAddOpt) {
     btnAddOpt.addEventListener('click', () => {
         const questionType = document.getElementById('questionType').value
         if (questionType === 'order_phrase') {
-            addOrderOptionRow()
+            addOrderPhraseRow()
         } else if (questionType === 'introduction') {
             addIntroductionRow()
-        } else {
+        } else if (questionType === 'multiple_choice') {
             addMultipleChoiceRow()
         }
     })
@@ -404,11 +522,20 @@ function updatePreviewExercise() {
         previewContainer.innerHTML = `
             ${mediaHtml}
             <p><b>1.</b> ${currentQuestionText}</p>
-            <p style="font-size: 10px; color: #666; margin-bottom: 6px;">(Palabras mezcladas)</p>
+            <p style="font-size: 10px; color: #666; margin-bottom: 6px;">(Frase mezclada)</p>
             <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
                 ${spansHtml}
             </div>
-            <button type="button" class="btn-prev-action">Comprobar Orden</button>
+            <button type="button" class="btn-prev-action">Comprobar Frase</button>
+        `
+    } else if (type === 'order_word') {
+        previewContainer.innerHTML = `
+            ${mediaHtml}
+            <p><b>1.</b> ${currentQuestionText}</p>
+            <div style="margin-bottom: 10px;">
+                <input type="text" disabled placeholder="Escribe la palabra..." style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #f8fafc;">
+            </div>
+            <button type="button" class="btn-prev-action">Comprobar Palabra</button>
         `
     } else if (type === 'introduction') {
         const wordInputs = document.querySelectorAll('.intro-word')
@@ -460,7 +587,7 @@ function updatePreviewExercise() {
 }
 
 document.addEventListener('input', (e) => {
-    if (e.target.classList.contains('opt-text') || e.target.id === 'questionText') {
+    if (e.target.classList.contains('opt-text') || e.target.id === 'questionText' || e.target.id === 'singleWordInput') {
         updatePreviewExercise()
     }
 })
@@ -478,9 +605,7 @@ if (questionTypeSelect) {
     })
 }
 
-renderOptionsInputs()
-
-// --- GUARDAR LECCIÓN ---
+// --- GUARDAR O ACTUALIZAR LECCIÓN ---
 const lessonForm = document.getElementById('lessonForm')
 if (lessonForm) {
     lessonForm.addEventListener('submit', async (e) => {
@@ -496,6 +621,18 @@ if (lessonForm) {
         if (questionType === 'multimedia') {
             if (!generalFileInput || generalFileInput.files.length === 0) {
                 alert('Has seleccionado el tipo "Multimedia". Debes subir obligatoriamente un archivo (audio o imagen).');
+                return;
+            }
+        }
+
+        // Validación estricta para order_word: una sola palabra limpia
+        const singleWordRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ]+$/;
+
+        if (questionType === 'order_word') {
+            const singleInput = document.getElementById('singleWordInput')
+            const val = singleInput ? singleInput.value.trim() : ''
+            if (!singleWordRegex.test(val)) {
+                alert('Error: "Ordenar la palabra" requiere estrictamente una sola palabra válida (sin espacios, guiones bajos ni símbolos). Ejemplo correcto: [Hola]');
                 return;
             }
         }
@@ -527,13 +664,12 @@ if (lessonForm) {
                 
                 if (file.type.startsWith('audio/')) {
                     finalAudioUrl = publicUrlData.publicUrl;
-                } else if (file.type.startsWith('image/')) {
-                    finalImageUrl = publicUrlData.publicUrl;
                 } else {
                     finalImageUrl = publicUrlData.publicUrl;
                 }
             }
 
+            // Gestionar nivel
             let { data: levelData, error: levelError } = await supabase
                 .from('levels').select('id').eq('language_id', languageId).eq('level_number', levelNum).single()
 
@@ -547,20 +683,46 @@ if (lessonForm) {
                 levelId = levelData.id
             }
 
-            const { data: newLesson, error: insertLessonError } = await supabase
-                .from('lessons').insert([{ 
-                    level_id: levelId, 
-                    lesson_number: lessonNum, 
-                    title, 
-                    description, 
-                    xp_reward: xpReward, 
-                    created_by: userId,
-                    lesson_type: questionType 
-                }]).select('id').single()
-            
-            if (insertLessonError) throw insertLessonError
-            const lessonId = newLesson.id
+            let lessonId;
 
+            if (editLessonId) {
+                // MODO ACTUALIZACIÓN
+                const { error: updateLessonError } = await supabase
+                    .from('lessons')
+                    .update({ 
+                        level_id: levelId, 
+                        lesson_number: lessonNum, 
+                        title, 
+                        description, 
+                        xp_reward: xpReward,
+                        lesson_type: questionType 
+                    })
+                    .eq('id', editLessonId);
+
+                if (updateLessonError) throw updateLessonError;
+                lessonId = editLessonId;
+
+                // Eliminar preguntas y opciones anteriores para reemplazarlas limpiamente
+                await supabase.from('questions').delete().eq('lesson_id', lessonId);
+
+            } else {
+                // MODO CREACIÓN NUEVA
+                const { data: newLesson, error: insertLessonError } = await supabase
+                    .from('lessons').insert([{ 
+                        level_id: levelId, 
+                        lesson_number: lessonNum, 
+                        title, 
+                        description, 
+                        xp_reward: xpReward, 
+                        created_by: userId,
+                        lesson_type: questionType 
+                    }]).select('id').single()
+                
+                if (insertLessonError) throw insertLessonError
+                lessonId = newLesson.id
+            }
+
+            // Insertar pregunta
             const { data: newQuestion, error: insertQuestionError } = await supabase
                 .from('questions').insert([{ 
                     lesson_id: lessonId, 
@@ -590,6 +752,10 @@ if (lessonForm) {
                         optionsData.push({ question_id: questionId, option_text: input.value.trim(), is_correct: false })
                     }
                 })
+            } else if (questionType === 'order_word') {
+                const singleInput = document.getElementById('singleWordInput')
+                const val = singleInput ? singleInput.value.trim() : ''
+                optionsData.push({ question_id: questionId, option_text: val, is_correct: true })
             } else if (questionType === 'introduction') {
                 const wordInputs = document.querySelectorAll('.intro-word')
                 const translationInputs = document.querySelectorAll('.intro-translation')
@@ -622,14 +788,19 @@ if (lessonForm) {
                 if (optErr) throw optErr
             }
 
-            alert('¡Lección y ejercicio guardados con éxito!')
-            lessonForm.reset()
-            cachedMediaUrl = null
-            cachedMediaType = null
-            if (btnRemoveFile) btnRemoveFile.style.display = 'none';
-            loadLanguages()
-            renderOptionsInputs()
-            updatePreviewExercise()
+            alert(editLessonId ? '¡Lección actualizada con éxito!' : '¡Lección y ejercicio guardados con éxito!');
+            
+            if (editLessonId) {
+                window.location.href = 'historial_lecciones.html';
+            } else {
+                lessonForm.reset()
+                cachedMediaUrl = null
+                cachedMediaType = null
+                if (btnRemoveFile) btnRemoveFile.style.display = 'none';
+                loadLanguages()
+                renderOptionsInputs()
+                updatePreviewExercise()
+            }
         } catch (err) {
             console.error('Error al guardar:', err.message)
             alert('Hubo un error al guardar: ' + err.message)

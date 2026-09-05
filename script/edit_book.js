@@ -8,9 +8,19 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 document.addEventListener('DOMContentLoaded', () => {
     const btnLogout = document.getElementById('btnLogout');
     const searchInput = document.getElementById('searchBook');
-    const booksTable = document.getElementById('booksTable');
-    const booksTableBody = document.getElementById('booksTableBody');
+    const filterTagSelect = document.getElementById('filterTag');
     const loadingMessage = document.getElementById('loadingMessage');
+
+    // Creamos o seleccionamos el contenedor de tarjetas en el DOM
+    const tableContainer = document.querySelector('.table-container');
+    let booksContainer = document.getElementById('booksContainer');
+    
+    if (!booksContainer) {
+        booksContainer = document.createElement('div');
+        booksContainer.id = 'booksContainer';
+        booksContainer.className = 'books-grid';
+        tableContainer.appendChild(booksContainer);
+    }
 
     let allBooks = [];
 
@@ -23,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchBooks() {
         try {
-            loadingMessage.style.display = 'block';
-            booksTable.style.display = 'none';
+            if (loadingMessage) loadingMessage.style.display = 'block';
+            booksContainer.style.display = 'none';
 
             const { data, error } = await supabase
                 .from('library_stories')
@@ -34,18 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) throw error;
 
             allBooks = data || [];
-            renderBooks(allBooks);
+            filterBooks(); // Renderizar aplicando filtros iniciales
 
-            loadingMessage.style.display = 'none';
-            booksTable.style.display = allBooks.length > 0 ? 'table' : 'none';
         } catch (err) {
             console.error('Error al cargar libros:', err);
-            loadingMessage.textContent = 'Error al conectar con la base de datos.';
+            if (loadingMessage) {
+                loadingMessage.innerHTML = '<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error al conectar con la base de datos.</span>';
+            }
         }
     }
 
     function renderBooks(books) {
-        const tableContainer = document.querySelector('.table-container');
+        if (loadingMessage) loadingMessage.style.display = 'none';
+
         let emptyState = document.getElementById('emptyStateBox');
         if (!emptyState) {
             emptyState = document.createElement('div');
@@ -60,43 +71,45 @@ document.addEventListener('DOMContentLoaded', () => {
             tableContainer.appendChild(emptyState);
         }
 
-        booksTableBody.innerHTML = '';
-
         if (books.length === 0) {
-            booksTable.style.display = 'none';
+            booksContainer.style.display = 'none';
             emptyState.style.display = 'block';
             return;
         }
 
         emptyState.style.display = 'none';
-        booksTable.style.display = 'table';
+        booksContainer.style.display = 'grid';
 
-        books.forEach(book => {
-            const tr = document.createElement('tr');
-
+        booksContainer.innerHTML = books.map(book => {
             const coverImg = book.image_asset 
-                ? `<img src="${book.image_asset}" alt="Portada" style="width: 40px; height: 50px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">` 
-                : '<span style="color: #999; font-size: 11px; font-style: italic;">Sin imagen</span>';
+                ? `<img src="${book.image_asset}" alt="Portada" class="book-card-cover">` 
+                : `<div class="book-card-cover" style="display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; text-align: center;">Sin imagen</div>`;
 
-            tr.innerHTML = `
-                <td>${coverImg}</td>
-                <td>
-                    <strong style="color: #1c3d98;">${book.title || 'Sin título'}</strong><br>
-                    <span class="sub-text" style="font-size: 12px; color: #64748b; font-style: italic;">${book.title_translation || 'Sin traducción'}</span>
-                </td>
-                <td><span class="xp-badge" style="background: #eef2f7; color: #1c3d98; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;">${book.tag || 'none'}</span></td>
-                <td style="color: #444;">${book.description ? book.description.substring(0, 60) + '...' : 'Sin descripción'}</td>
-                <td>
-                    <div class="action-buttons" style="display: flex; gap: 6px;">
+            const authorName = book.author || book.autor || 'Autor desconocido';
+
+            return `
+                <div class="book-card" data-id="${book.id}">
+                    <div>
+                        <div class="book-card-header">
+                            ${coverImg}
+                            <div class="book-card-info">
+                                <h3 class="book-card-title" title="${book.title || 'Sin título'}">${book.title || 'Sin título'}</h3>
+                                <div class="sub-text" style="font-size: 12px; color: #64748b; font-style: italic; margin-bottom: 4px;">${book.title_translation || ''}</div>
+                                <div class="book-card-author"><i class="fa-solid fa-pen-nib" style="margin-right: 4px;"></i> ${authorName}</div>
+                                <span class="book-card-tag">${book.tag || 'none'}</span>
+                            </div>
+                        </div>
+                        <p class="book-card-desc">${book.description ? book.description : 'Sin descripción'}</p>
+                    </div>
+                    <div class="book-card-actions">
                         <button class="btn-action btn-edit" data-id="${book.id}" title="Editar" style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fa-solid fa-pen"></i></button>
                         <button class="btn-action btn-delete" data-id="${book.id}" title="Eliminar" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
                     </div>
-                </td>
+                </div>
             `;
+        }).join('');
 
-            booksTableBody.appendChild(tr);
-        });
-
+        // Eventos para eliminar y editar
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.dataset.id;
@@ -127,19 +140,35 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchBooks();
         } catch (err) {
             console.error('Error al eliminar:', err);
-            alert('Hubo un error al eliminar el libro: ' + err.message);
+            alert('Hubo al eliminar el libro: ' + err.message);
         }
     }
 
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allBooks.filter(book => 
+    // Función unificada de filtrado (Texto y Etiqueta)
+    function filterBooks() {
+        const term = searchInput ? searchInput.value.toLowerCase() : '';
+        const selectedTag = filterTagSelect ? filterTagSelect.value.toLowerCase() : '';
+
+        const filtered = allBooks.filter(book => {
+            const matchesText = 
                 (book.title && book.title.toLowerCase().includes(term)) ||
-                (book.title_translation && book.title_translation.toLowerCase().includes(term))
-            );
-            renderBooks(filtered);
+                (book.title_translation && book.title_translation.toLowerCase().includes(term)) ||
+                ((book.author || book.autor) && (book.author || book.autor).toLowerCase().includes(term));
+            
+            const matchesTag = selectedTag === '' || (book.tag && book.tag.toLowerCase() === selectedTag);
+
+            return matchesText && matchesTag;
         });
+
+        renderBooks(filtered);
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterBooks);
+    }
+
+    if (filterTagSelect) {
+        filterTagSelect.addEventListener('change', filterBooks);
     }
 
     fetchBooks();

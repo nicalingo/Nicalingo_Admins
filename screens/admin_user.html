@@ -7,6 +7,78 @@
     <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../styles/add_leccion.css">
+    <style>
+        @keyframes floatMascot {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Estilos para la lista de usuarios administradores/editores/auditores */
+        .users-table-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #e2e8f0;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .admin-users-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .admin-users-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .admin-users-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            vertical-align: middle;
+        }
+
+        .user-avatar-cell {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-badge.admin {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .role-badge.editor {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .role-badge.auditor {
+            background: #fef3c7;
+            color: #92400e;
+        }
+    </style>
 </head>
 <body>
 
@@ -50,7 +122,7 @@
                             <select id="newRole" required>
                                 <option value="editor">Editor</option>
                                 <option value="admin">Administrador</option>
-                                <option value="user">Usuario Estándar</option>
+                                <option value="student">Estudiante (Student)</option>
                             </select>
                         </div>
 
@@ -58,10 +130,43 @@
                     </form>
                 </div>
             </section>
+
+            <!-- Sección inferior para listar a los administradores, editores y auditores -->
+            <section class="editor-card">
+                <div class="card-header-bar">
+                    <span class="step-badge">2</span>
+                    <h2>Usuarios con Permisos Especiales</h2>
+                </div>
+                <div class="card-body">
+                    <div class="users-table-container">
+                        <div id="loadingUsersMsg" style="text-align: center; color: #64748b; padding: 20px;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios autorizados...
+                        </div>
+                        <table class="admin-users-table" id="privilegedUsersTable" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Avatar</th>
+                                    <th>Nickname</th>
+                                    <th>Correo electrónico</th>
+                                    <th>Permiso / Rol</th>
+                                </tr>
+                            </thead>
+                            <tbody id="privilegedUsersBody">
+                                <!-- Se llenará dinámicamente mediante admin_user.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
         </div>
 
-        <div id="unauthorizedSection" style="display: none; padding: 20px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; color: #856404;">
-            <i class="fa-solid fa-triangle-exclamation"></i> Acceso restringido. Solo los administradores pueden gestionar los permisos de otros usuarios.
+        <!-- Sección de Acceso No Autorizado con Coco Ups -->
+        <div id="unauthorizedSection" style="display: none; padding: 30px; background: #fff5f5; border: 1px solid #feb2b2; border-radius: 12px; color: #c53030; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco ups" style="width: 80px; height: 80px; object-fit: contain; animation: floatMascot 2s ease-in-out infinite;">
+                <h3 style="margin: 0; font-size: 18px; color: #9b2c2c;">¡Ups! Acceso restringido</h3>
+                <p style="margin: 0; font-size: 14px; color: #742a2a;">Solo los administradores pueden gestionar los permisos de otros usuarios.</p>
+            </div>
         </div>
     </main>
 
