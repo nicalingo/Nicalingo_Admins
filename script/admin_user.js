@@ -14,6 +14,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const privilegedUsersTable = document.getElementById('privilegedUsersTable');
     const privilegedUsersBody = document.getElementById('privilegedUsersBody');
 
+    const loadingLanguagesMsg = document.getElementById('loadingLanguagesMsg');
+    const languagesTable = document.getElementById('languagesTable');
+    const languagesBody = document.getElementById('languagesBody');
+
     if (btnLogout) {
         btnLogout.addEventListener('click', async () => {
             await supabase.auth.signOut();
@@ -41,21 +45,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (unauthorizedSection) unauthorizedSection.style.display = 'none';
         
         loadPrivilegedUsers();
+        loadLanguagesCatalog();
     }
 
-    // Función para cargar los usuarios con roles especiales (admin y editor)
     async function loadPrivilegedUsers() {
         if (!loadingUsersMsg) return;
-
-        // Mostrar Coco feliz animado mientras carga
-        loadingUsersMsg.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; gap: 12px;">
-                <img src="../assets/imagenes/coco/coco_feliz.png" alt="Coco feliz" style="width: 75px; height: 75px; object-fit: contain; animation: floatMascot 2s ease-in-out infinite;">
-                <span style="color: #1c3d98; font-weight: 600; font-size: 14px;">
-                    <i class="fa-solid fa-spinner fa-spin" style="margin-right: 6px;"></i> ¡Coco está buscando a los usuarios con permisos...
-                </span>
-            </div>
-        `;
 
         try {
             const { data: profiles, error } = await supabase
@@ -75,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             profiles.forEach(user => {
                 const role = (user.role || '').toLowerCase().trim();
                 
-                // Mostrar solo los usuarios que sean 'admin' o 'editor' en la tabla de privilegios
                 if (role === 'admin' || role === 'editor') {
                     countValid++;
                     const tr = document.createElement('tr');
@@ -83,8 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const avatarUrl = user.avatar_url || user.avatar || '../assets/imagenes/coco/mascota.png';
                     const nickname = user.nickname || 'Sin apodo';
                     const email = user.email || 'Correo no disponible';
-
-                    let badgeClass = role === 'admin' ? 'admin' : 'editor';
+                    const badgeClass = role === 'admin' ? 'admin' : 'editor';
 
                     tr.innerHTML = `
                         <td><img src="${avatarUrl}" alt="Avatar" class="user-avatar-cell" onerror="this.src='../assets/imagenes/coco/mascota.png'"></td>
@@ -106,15 +98,80 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (err) {
             console.error('Error al cargar usuarios:', err);
-            // Mostrar Coco ups si ocurre un error al cargar (ruta corregida con espacio)
-            loadingUsersMsg.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; gap: 12px;">
-                    <img src="../assets/imagenes/coco/coco ups.png" alt="Coco ups" style="width: 75px; height: 75px; object-fit: contain; animation: floatMascot 2s ease-in-out infinite;">
-                    <span style="color: #e53e3e; font-weight: 600; font-size: 14px;">
-                        <i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> ¡Ups! Algo salió mal al cargar los usuarios.
-                    </span>
-                </div>
-            `;
+            loadingUsersMsg.innerHTML = '<p style="color: #e53e3e;">¡Ups! Algo salió mal al cargar los usuarios.</p>';
+        }
+    }
+
+    async function loadLanguagesCatalog() {
+        if (!loadingLanguagesMsg) return;
+
+        try {
+            const { data: languages, error } = await supabase
+                .from('languages')
+                .select('id, name, is_active')
+                .order('id', { ascending: true });
+
+            if (error) throw error;
+
+            languagesBody.innerHTML = '';
+
+            languages.forEach(lang => {
+                const isActive = lang.is_active === true;
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td><strong>#${lang.id}</strong></td>
+                    <td>${lang.name}</td>
+                    <td>
+                        <span id="status-text-${lang.id}" class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">
+                            ${isActive ? 'Activo' : 'En desarrollo'}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <label class="switch">
+                            <input type="checkbox" id="lang-switch-${lang.id}" ${isActive ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                `;
+
+                languagesBody.appendChild(tr);
+
+                const switchInput = tr.querySelector(`#lang-switch-${lang.id}`);
+                switchInput.addEventListener('change', async (e) => {
+                    await toggleLanguageStatus(lang.id, e.target.checked);
+                });
+            });
+
+            loadingLanguagesMsg.style.display = 'none';
+            languagesTable.style.display = 'table';
+
+        } catch (err) {
+            console.error('Error al cargar catálogo de idiomas:', err);
+            loadingLanguagesMsg.innerHTML = '<p style="color: #e53e3e;">Error al cargar idiomas.</p>';
+        }
+    }
+
+    async function toggleLanguageStatus(languageId, newStatus) {
+        const statusText = document.getElementById(`status-text-${languageId}`);
+        const switchInput = document.getElementById(`lang-switch-${languageId}`);
+
+        try {
+            const { error } = await supabase
+                .from('languages')
+                .update({ is_active: newStatus })
+                .eq('id', languageId);
+
+            if (error) throw error;
+
+            if (statusText) {
+                statusText.textContent = newStatus ? 'Activo' : 'En desarrollo';
+                statusText.className = `status-badge ${newStatus ? 'status-active' : 'status-inactive'}`;
+            }
+        } catch (err) {
+            console.error('Error al actualizar idioma:', err);
+            alert('No se pudo actualizar el estado del idioma: ' + err.message);
+            if (switchInput) switchInput.checked = !newStatus;
         }
     }
 
@@ -126,7 +183,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const role = document.getElementById('newRole').value;
 
             try {
-                // Llamada a la función RPC segura creada en Supabase
                 const { error: rpcError } = await supabase
                     .rpc('update_user_role_by_email', { 
                         target_email: email, 
@@ -137,7 +193,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 alert('¡Rol actualizado exitosamente para el usuario!');
                 roleForm.reset();
-                loadPrivilegedUsers(); // Recargar la tabla inferior automáticamente
+                loadPrivilegedUsers();
             } catch (err) {
                 console.error('Error al actualizar rol:', err);
                 alert('Hubo un error al actualizar el rol: ' + err.message);

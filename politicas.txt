@@ -1,0 +1,230 @@
+-- 1. Activar RLS en las tablas de contenido
+ALTER TABLE levels ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE question_options ENABLE ROW LEVEL SECURITY;
+
+-- ==========================================
+-- POLÍTICAS DE LECTURA (Cualquier usuario puede estudiar/ver el contenido)
+-- ==========================================
+CREATE POLICY "Lectura libre de levels" ON levels FOR SELECT USING (true);
+CREATE POLICY "Lectura libre de lessons" ON lessons FOR SELECT USING (true);
+CREATE POLICY "Lectura libre de questions" ON questions FOR SELECT USING (true);
+CREATE POLICY "Lectura libre de question_options" ON question_options FOR SELECT USING (true);
+
+-- ==========================================
+-- POLÍTICAS DE ESCRITURA (INSERT, UPDATE, DELETE solo para editores o admins)
+-- ==========================================
+
+-- Para LEVELS
+CREATE POLICY "Escritura segura en levels" ON levels 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- Para LESSONS
+CREATE POLICY "Escritura segura en lessons" ON lessons 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- Para QUESTIONS
+CREATE POLICY "Escritura segura en questions" ON questions 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- Para QUESTION_OPTIONS
+CREATE POLICY "Escritura segura en question_options" ON question_options 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- 1. Activar RLS en la tabla languages
+ALTER TABLE languages ENABLE ROW LEVEL SECURITY;
+
+-- 2. Permitir lectura pública (para que la app pueda mostrar los idiomas a los estudiantes)
+CREATE POLICY "Lectura pública de languages" ON languages 
+FOR SELECT USING (true);
+
+-- 3. Permitir inserción/modificación solo a editores o administradores
+CREATE POLICY "Escritura segura en languages" ON languages 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- Bliblioteca
+alter table library_stories enable row level security;
+
+--pi¿oliticas 
+create policy "Permitir lectura pública de la biblioteca"
+  on library_stories
+  for select
+  using (true);
+
+  -- Escritura segura en library_stories (Solo editores o admins)
+CREATE POLICY "Escritura segura en library_stories" ON library_stories 
+FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- 1. Asegurar que RLS esté activo en profiles
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- 2. Limpiar políticas anteriores de profiles si las hubiera (para evitar conflictos)
+DROP POLICY IF EXISTS "Perfiles visibles para todos" ON public.profiles;
+DROP POLICY IF EXISTS "Los usuarios pueden actualizar su propio perfil" ON public.profiles;
+
+-- 3. Crear política de lectura pública
+CREATE POLICY "Perfiles visibles para todos" 
+  ON public.profiles 
+  FOR SELECT 
+  USING (true);
+
+-- 4. Crear política estricta de actualización (Solo puedes editar tu propia fila)
+CREATE POLICY "Los usuarios pueden actualizar su propio perfil" 
+  ON public.profiles 
+  FOR UPDATE 
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- Activar RLS
+ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_achievements ENABLE ROW LEVEL SECURITY;
+
+-- Lectura pública de los logros generales
+CREATE POLICY "Lectura pública de logros" 
+    ON public.achievements 
+    FOR SELECT 
+    USING (true);
+
+-- Lectura pública de los logros de los usuarios (para que se puedan ver en los perfiles)
+CREATE POLICY "Lectura pública de user_achievements" 
+    ON public.user_achievements 
+    FOR SELECT 
+    USING (true);
+
+-- Escritura protegida para achievements (Solo admin/editor puede crear logros)
+CREATE POLICY "Escritura segura en achievements" 
+    ON public.achievements 
+    FOR ALL TO authenticated 
+USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+-- Permitir que el sistema o el usuario registren sus propios logros desbloqueados
+CREATE POLICY "Los usuarios pueden registrar sus propios logros" 
+    ON public.user_achievements 
+    FOR INSERT TO authenticated 
+    WITH CHECK (auth.uid() = user_id);
+  
+
+-- Activar Row Level Security (RLS)
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+
+-- Políticas de seguridad idénticas a tu estándar
+CREATE POLICY "Lectura propia de user_progress" 
+  ON public.user_progress 
+  FOR SELECT 
+  TO authenticated 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Escritura propia de user_progress" 
+  ON public.user_progress 
+  FOR INSERT 
+  TO authenticated 
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Actualización propia de user_progress" 
+  ON public.user_progress 
+  FOR UPDATE 
+  TO authenticated 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+  
+
+-- 1. Asegurarnos de que RLS esté activo en library_stories
+ALTER TABLE public.library_stories ENABLE ROW LEVEL SECURITY;
+
+-- 2. Limpiar políticas anteriores para evitar conflictos (opcional pero recomendado)
+DROP POLICY IF EXISTS "Permitir lectura pública de la biblioteca" ON public.library_stories;
+DROP POLICY IF EXISTS "Escritura segura en library_stories" ON public.library_stories;
+
+-- 3. Política de lectura pública (cualquier usuario ve las historias y sus etiquetas)
+CREATE POLICY "Permitir lectura pública de la biblioteca"
+  ON public.library_stories
+  FOR SELECT
+  USING (true);
+
+-- 4. Política de escritura segura (solo administradores o editores pueden insertar o actualizar historias y sus etiquetas)
+CREATE POLICY "Escritura segura en library_stories" 
+  ON public.library_stories 
+  FOR ALL 
+  TO authenticated 
+  USING (public.get_user_role(auth.uid()) IN ('editor', 'admin'))
+  WITH CHECK (public.get_user_role(auth.uid()) IN ('editor', 'admin'));
+
+ -- ==========================================
+-- POLÍTICAS RLS SOLO PARA USER_PROGRESS
+-- ==========================================
+
+-- 1. Activar Row Level Security en la tabla
+ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
+
+-- 2. Limpiar políticas previas por seguridad
+DROP POLICY IF EXISTS "Lectura propia de user_progress" ON public.user_progress;
+DROP POLICY IF EXISTS "Escritura propia de user_progress" ON public.user_progress;
+DROP POLICY IF EXISTS "Actualización propia de user_progress" ON public.user_progress;
+
+-- 3. Reglas de acceso exclusivas para el usuario autenticado
+CREATE POLICY "Lectura propia de user_progress" 
+  ON public.user_progress 
+  FOR SELECT 
+  TO authenticated 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Escritura propia de user_progress" 
+  ON public.user_progress 
+  FOR INSERT 
+  TO authenticated 
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Actualización propia de user_progress" 
+  ON public.user_progress 
+  FOR UPDATE 
+  TO authenticated 
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+  ALTER TABLE public.user_progress ALTER COLUMN language_id DROP NOT NULL;
+
+  -- 1. Habilitar RLS en la tabla library_stories (por seguridad)
+ALTER TABLE library_stories ENABLE ROW LEVEL SECURITY;
+
+-- 2. Limpiar políticas anteriores para evitar conflictos
+DROP POLICY IF EXISTS "Permitir lectura publica de libros" ON library_stories;
+DROP POLICY IF EXISTS "Permitir gestion a admins y editores" ON library_stories;
+
+-- 3. Lectura libre (cualquiera puede ver los libros, ideal para la app de NicaLingo)
+CREATE POLICY "Permitir lectura publica de libros"
+ON library_stories
+FOR SELECT
+USING (true);
+
+-- 4. Inserción, Actualización y Eliminación exclusiva para Administradores y Editores
+CREATE POLICY "Permitir gestion a admins y editores"
+ON library_stories
+FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role IN ('admin', 'editor')
+  )
+)
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role IN ('admin', 'editor')
+  )
+);
