@@ -5,15 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NicaLingo - Creador / Editor de Lección</title>
     <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
-    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Único archivo CSS local necesario -->
     <link rel="stylesheet" href="../styles/add_leccion.css">
 </head>
 <body>
 
-    <!-- Menú Lateral (Sidebar idéntico al historial) -->
     <aside>
         <div class="sidebar-brand">
             <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
@@ -24,14 +20,13 @@
             <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
             <li><a href="edit_book.html"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
             <li><a href="historial_lecciones.html"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-             <li><a href="admin_user.html"><i class="fa-solid fa-users"></i> Administradores</a></li>
+            <li><a href="admin_user.html"><i class="fa-solid fa-users"></i> Administradores</a></li>
         </ul>
         <button id="btnLogout" class="btn-logout">
             <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
         </button>
     </aside>
 
-    <!-- Contenido Principal -->
     <main>
         <header>
             <h1>CREADOR / EDITOR DE LECCIÓN</h1>
@@ -42,9 +37,15 @@
                 
                 <!-- SECCIÓN 1: Información General -->
                 <section class="editor-card">
-                    <div class="card-header-bar">
-                        <span class="step-badge">1</span>
-                        <h2>Información general</h2>
+                    <div class="card-header-bar" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="step-badge">1</span>
+                            <h2>Información general</h2>
+                        </div>
+                        <div id="langStatusBadge" style="display: none; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px;">
+                            <span id="langStatusDot" style="width: 8px; height: 8px; border-radius: 50%;"></span>
+                            <span id="langStatusText"></span>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="form-row-3">
@@ -76,21 +77,19 @@
                     </div>
                 </section>
 
-                <!-- SECCIÓN 2: Contenido de Lección (Con pestañas internas) -->
+                <!-- SECCIÓN 2: Contenido de Lección -->
                 <section class="editor-card">
                     <div class="card-header-bar">
                         <span class="step-badge">2</span>
                         <h2>Contenido de Lección</h2>
                     </div>
                     <div class="card-body inner-tabs-layout">
-                        <!-- Pestañas internas -->
                         <div class="inner-tabs-menu">
-                            <button type="button" class="tab-btn active" data-tab="tab-texto"><i class="fa-solid fa-t"></i>Enunciado</button>
+                            <button type="button" class="tab-btn active" data-tab="tab-texto"><i class="fa-solid fa-t"></i> Enunciado</button>
                             <button type="button" class="tab-btn" data-tab="tab-tipo"><i class="fa-solid fa-book-bookmark"></i> Tipo de lección</button>
                             <button type="button" class="tab-btn" data-tab="tab-imagen"><i class="fa-solid fa-folder-open"></i> Multimedia</button>
                         </div>
 
-                        <!-- Contenido de las pestañas -->
                         <div class="inner-tabs-content">
                             <!-- Pestaña 1: Texto -->
                             <div class="tab-pane active" id="tab-texto">

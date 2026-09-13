@@ -6,12 +6,12 @@ const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 let currentUserSession = null
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 let cachedMediaUrl = null;
 let cachedMediaType = null;
+let cachedLanguagesList = [];
 
-// Detectar si estamos en modo edición mediante el parámetro ?edit=ID en la URL
 const urlParams = new URLSearchParams(window.location.search);
 const editLessonId = urlParams.get('edit');
 
@@ -37,7 +37,6 @@ async function checkAuthAndRole() {
         return
     }
 
-    // Una vez autenticado y validado el rol, cargamos los idiomas y si hay ID de edición, cargamos los datos
     await loadLanguages()
     if (editLessonId) {
         await loadLessonDataForEdit(editLessonId)
@@ -48,10 +47,13 @@ async function checkAuthAndRole() {
 
 checkAuthAndRole()
 
-// --- CARGAR IDIOMAS ---
+// --- CARGAR IDIOMAS Y SU ESTADO ---
 async function loadLanguages() {
     const select = document.getElementById('languageSelect')
-    const { data: languages, error } = await supabase.from('languages').select('id, name')
+    const { data: languages, error } = await supabase
+        .from('languages')
+        .select('id, name, is_active')
+        .order('id', { ascending: true })
 
     if (error) {
         console.error('Error al cargar idiomas:', error.message)
@@ -59,15 +61,59 @@ async function loadLanguages() {
         return
     }
 
+    cachedLanguagesList = languages || []
     select.innerHTML = '<option value="">Selecciona un idioma</option>'
-    if (languages && languages.length > 0) {
-        languages.forEach(lang => {
+    
+    if (cachedLanguagesList.length > 0) {
+        cachedLanguagesList.forEach(lang => {
             const option = document.createElement('option')
             option.value = lang.id
             option.textContent = lang.name
             select.appendChild(option)
         })
     }
+
+    updateLanguageStatusBadge()
+}
+
+// --- ACTUALIZAR INSIGNIA DE ESTADO DEL IDIOMA ---
+function updateLanguageStatusBadge() {
+    const select = document.getElementById('languageSelect')
+    const badge = document.getElementById('langStatusBadge')
+    const dot = document.getElementById('langStatusDot')
+    const text = document.getElementById('langStatusText')
+
+    if (!select || !badge || !dot || !text) return
+
+    const selectedId = select.value
+    const selectedLang = cachedLanguagesList.find(l => String(l.id) === String(selectedId))
+
+    if (!selectedId || !selectedLang) {
+        badge.style.display = 'none'
+        return
+    }
+
+    const isActive = selectedLang.is_active === true
+    badge.style.display = 'inline-flex'
+
+    if (isActive) {
+        badge.style.background = '#dcfce7'
+        badge.style.color = '#15803d'
+        badge.style.border = '1px solid #bbf7d0'
+        dot.style.background = '#22c55e'
+        text.textContent = 'Idioma Activo'
+    } else {
+        badge.style.background = '#fee2e2'
+        badge.style.color = '#b91c1c'
+        badge.style.border = '1px solid #fecaca'
+        dot.style.background = '#ef4444'
+        text.textContent = 'En Desarrollo'
+    }
+}
+
+const langSelectElem = document.getElementById('languageSelect')
+if (langSelectElem) {
+    langSelectElem.addEventListener('change', updateLanguageStatusBadge)
 }
 
 // --- GESTIÓN DE OPCIONES DINÁMICAS ---
@@ -255,7 +301,7 @@ function renderOptionsInputs() {
     updatePreviewExercise()
 }
 
-// --- FUNCIÓN PARA CARGAR DATOS EN MODO EDICIÓN ---
+// --- CARGAR DATOS EN MODO EDICIÓN ---
 async function loadLessonDataForEdit(lessonId) {
     try {
         const { data: lesson, error: lessonErr } = await supabase
@@ -291,6 +337,7 @@ async function loadLessonDataForEdit(lessonId) {
         if (lesson.levels) {
             document.getElementById('languageSelect').value = lesson.levels.language_id || '';
             document.getElementById('levelNumber').value = lesson.levels.level_number || 1;
+            updateLanguageStatusBadge();
         }
 
         document.getElementById('prevTitle').textContent = lesson.title || 'Saludos básicos';
@@ -412,7 +459,6 @@ const previewContainer = document.getElementById('previewQuestionContainer')
 const generalFileInput = document.getElementById('generalFile')
 const btnRemoveFile = document.getElementById('btnRemoveFile')
 
-// --- GESTIÓN DE ARCHIVO GENERAL Y BOTÓN ELIMINAR ---
 if (generalFileInput) {
     generalFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -606,7 +652,7 @@ document.addEventListener('change', (e) => {
 })
 
 if (questionTypeSelect) {
-    questionTypeSelect.addEventListener('change', (e) => {
+    questionTypeSelect.addEventListener('change', () => {
         renderOptionsInputs()
         updatePreviewExercise()
     })
