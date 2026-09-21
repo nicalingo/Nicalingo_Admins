@@ -8,8 +8,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 let currentUserSession = null
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-let cachedMediaUrl = null;
-let cachedMediaType = null;
+let cachedImageUrl = null;
+let cachedAudioUrl = null;
 let cachedLanguagesList = [];
 
 const urlParams = new URLSearchParams(window.location.search);
@@ -286,6 +286,27 @@ function renderOptionsInputs() {
         addIntroductionRow()
         addIntroductionRow()
 
+    } else if (questionType === 'pronunciation') {
+        if (label) label.textContent = 'Configuración de Fonética y Pronunciación'
+        if (btnAdd) btnAdd.style.display = 'none'
+
+        const row = document.createElement('div')
+        row.className = 'dynamic-row'
+        row.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <select id="pronunciationMode" class="opt-text" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%;">
+                    <option value="repetition">Modo Repetición (Ve la palabra y repite)</option>
+                    <option value="memory">Modo Evocación (Solo ve la traducción)</option>
+                </select>
+                <input type="text" placeholder="Palabra o frase objetivo a pronunciar" id="pronunciationTarget" class="opt-text" required style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                <input type="text" placeholder="Traducción (Opcional pero recomendada para Evocación)" id="pronunciationTranslation" class="opt-text" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            </div>
+            <small style="display: block; color: #64748b; margin-top: 6px; font-size: 11px;">
+                <i class="fa-solid fa-circle-info"></i> Sube un audio e imagen en la pestaña de multimedia para que sirva de referencia al estudiante.
+            </small>
+        `
+        container.appendChild(row)
+        
     } else {
         if (label) label.textContent = 'Opciones de Respuesta (Marca la casilla de la correcta)'
         
@@ -350,6 +371,10 @@ async function loadLessonDataForEdit(lessonId) {
             document.getElementById('questionText').value = q.question_text || '';
             document.getElementById('questionType').value = q.question_type || 'multiple_choice';
 
+            // Cargar multimedia de edición si existe
+            cachedImageUrl = q.image_url || null;
+            cachedAudioUrl = q.audio_url || null;
+
             if (q.question_type === 'order_phrase') {
                 renderOptionsInputs();
                 const container = document.getElementById('optionsContainer');
@@ -378,6 +403,19 @@ async function loadLessonDataForEdit(lessonId) {
                     const t = parts[1] ? parts[1].trim() : '';
                     addIntroductionRow(w, t);
                 });
+            } else if (q.question_type === 'pronunciation') {
+                renderOptionsInputs();
+                const correctOpt = q.question_options.find(o => o.is_correct);
+                if (correctOpt) {
+                    const parts = correctOpt.option_text.split('|');
+                    const modeInput = document.getElementById('pronunciationMode');
+                    const targetInput = document.getElementById('pronunciationTarget');
+                    const transInput = document.getElementById('pronunciationTranslation');
+                    
+                    if (modeInput && parts[0]) modeInput.value = parts[0];
+                    if (targetInput && parts[1]) targetInput.value = parts[1];
+                    if (transInput && parts[2]) transInput.value = parts[2];
+                }
             } else {
                 renderOptionsInputs();
                 const container = document.getElementById('optionsContainer');
@@ -456,48 +494,71 @@ if (lessonNumInput) {
 
 const questionTypeSelect = document.getElementById('questionType')
 const previewContainer = document.getElementById('previewQuestionContainer')
-const generalFileInput = document.getElementById('generalFile')
-const btnRemoveFile = document.getElementById('btnRemoveFile')
 
-if (generalFileInput) {
-    generalFileInput.addEventListener('change', (e) => {
+// Referencias de archivos separados
+const imageFileInput = document.getElementById('imageFile')
+const audioFileInput = document.getElementById('audioFile')
+const btnRemoveImage = document.getElementById('btnRemoveImage')
+const btnRemoveAudio = document.getElementById('btnRemoveAudio')
+
+if (imageFileInput) {
+    imageFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > MAX_FILE_SIZE) {
-                alert('El archivo supera el límite máximo de 5 MB.');
-                generalFileInput.value = ''; 
-                cachedMediaUrl = null;
-                cachedMediaType = null;
-                if (btnRemoveFile) btnRemoveFile.style.display = 'none';
+                alert('La imagen supera el límite máximo de 5 MB.');
+                imageFileInput.value = ''; 
+                cachedImageUrl = null;
+                if (btnRemoveImage) btnRemoveImage.style.display = 'none';
                 updatePreviewExercise();
                 return;
             }
-
-            cachedMediaUrl = URL.createObjectURL(file);
-            if (file.type.startsWith('audio/')) {
-                cachedMediaType = 'audio';
-            } else if (file.type.startsWith('image/')) {
-                cachedMediaType = 'image';
-            } else {
-                cachedMediaType = 'file';
-            }
-
-            if (btnRemoveFile) btnRemoveFile.style.display = 'inline-flex';
+            cachedImageUrl = URL.createObjectURL(file);
+            if (btnRemoveImage) btnRemoveImage.style.display = 'inline-flex';
         } else {
-            cachedMediaUrl = null;
-            cachedMediaType = null;
-            if (btnRemoveFile) btnRemoveFile.style.display = 'none';
+            cachedImageUrl = null;
+            if (btnRemoveImage) btnRemoveImage.style.display = 'none';
         }
         updatePreviewExercise();
     });
 }
 
-if (btnRemoveFile) {
-    btnRemoveFile.addEventListener('click', () => {
-        if (generalFileInput) generalFileInput.value = '';
-        cachedMediaUrl = null;
-        cachedMediaType = null;
-        btnRemoveFile.style.display = 'none';
+if (audioFileInput) {
+    audioFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > MAX_FILE_SIZE) {
+                alert('El audio supera el límite máximo de 5 MB.');
+                audioFileInput.value = ''; 
+                cachedAudioUrl = null;
+                if (btnRemoveAudio) btnRemoveAudio.style.display = 'none';
+                updatePreviewExercise();
+                return;
+            }
+            cachedAudioUrl = URL.createObjectURL(file);
+            if (btnRemoveAudio) btnRemoveAudio.style.display = 'inline-flex';
+        } else {
+            cachedAudioUrl = null;
+            if (btnRemoveAudio) btnRemoveAudio.style.display = 'none';
+        }
+        updatePreviewExercise();
+    });
+}
+
+if (btnRemoveImage) {
+    btnRemoveImage.addEventListener('click', () => {
+        if (imageFileInput) imageFileInput.value = '';
+        cachedImageUrl = null;
+        btnRemoveImage.style.display = 'none';
+        updatePreviewExercise();
+    });
+}
+
+if (btnRemoveAudio) {
+    btnRemoveAudio.addEventListener('click', () => {
+        if (audioFileInput) audioFileInput.value = '';
+        cachedAudioUrl = null;
+        btnRemoveAudio.style.display = 'none';
         updatePreviewExercise();
     });
 }
@@ -513,31 +574,22 @@ function updatePreviewExercise() {
 
     let mediaHtml = ''
 
-    if (cachedMediaUrl && cachedMediaType) {
-        if (cachedMediaType === 'audio') {
-            mediaHtml = `
-                <div style="margin-bottom: 10px; background: #eef2f7; padding: 8px; border-radius: 6px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #1c3d98; display: block; margin-bottom: 4px;"><i class="fa-solid fa-headphones"></i> Audio detectado</span>
-                    <audio controls style="width: 100%; height: 32px;">
-                        <source src="${cachedMediaUrl}">
-                        Tu navegador no soporta audio.
-                    </audio>
-                </div>
-            `;
-        } else if (cachedMediaType === 'image') {
-            mediaHtml = `
-                <div style="margin-bottom: 10px; text-align: center; background: #fdfdfd; padding: 6px; border: 1px solid #ddd; border-radius: 6px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #2b6cb0; display: block; margin-bottom: 4px;"><i class="fa-solid fa-image"></i> Imagen detectada</span>
-                    <img src="${cachedMediaUrl}" alt="Visualización" style="max-width: 100%; max-height: 130px; border-radius: 4px; object-fit: contain;">
-                </div>
-            `;
-        } else {
-            mediaHtml = `
-                <div style="margin-bottom: 10px; background: #fff3cd; padding: 8px; border-radius: 6px; font-size: 11px; color: #856404;">
-                    <i class="fa-solid fa-file"></i> Archivo multimedia adjunto
-                </div>
-            `;
-        }
+    if (cachedImageUrl) {
+        mediaHtml += `
+            <div style="margin-bottom: 10px; text-align: center; background: #fdfdfd; padding: 6px; border: 1px solid #ddd; border-radius: 6px;">
+                <img src="${cachedImageUrl}" alt="Visualización de imagen" style="max-width: 100%; max-height: 130px; border-radius: 4px; object-fit: contain;">
+            </div>
+        `;
+    }
+    if (cachedAudioUrl) {
+        mediaHtml += `
+            <div style="margin-bottom: 10px; background: #eef2f7; padding: 8px; border-radius: 6px;">
+                <audio controls style="width: 100%; height: 32px;">
+                    <source src="${cachedAudioUrl}">
+                    Tu navegador no soporta audio.
+                </audio>
+            </div>
+        `;
     }
 
     if (type === 'order_phrase') {
@@ -615,6 +667,37 @@ function updatePreviewExercise() {
             </div>
             <button type="button" class="btn-prev-action">Continuar</button>
         `
+    } else if (type === 'pronunciation') {
+        const targetInput = document.getElementById('pronunciationTarget');
+        const transInput = document.getElementById('pronunciationTranslation');
+        const modeInput = document.getElementById('pronunciationMode');
+        
+        const targetWord = targetInput && targetInput.value.trim() !== '' ? targetInput.value : 'Palabra/Frase';
+        const transWord = transInput && transInput.value.trim() !== '' ? transInput.value : 'Traducción';
+        const mode = modeInput ? modeInput.value : 'repetition';
+        
+        const modeBadge = mode === 'repetition' 
+            ? `<div style="background: #eef2f7; color: #1c3d98; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-bottom: 10px; display: inline-block;"><i class="fa-solid fa-ear-listen"></i> Modo Repetición</div>`
+            : `<div style="background: #fef08a; color: #854d0e; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-bottom: 10px; display: inline-block;"><i class="fa-solid fa-brain"></i> Modo Evocación</div>`;
+
+        const displayWord = mode === 'repetition' ? targetWord : `¿Cómo se dice "${transWord}"?`;
+        const subDisplay = mode === 'repetition' ? transWord : `<span style="filter: blur(4px);">Oculto</span>`;
+
+        previewContainer.innerHTML = `
+            ${mediaHtml}
+            <p><b>1.</b> ${currentQuestionText}</p>
+            ${modeBadge}
+            <div style="text-align: center; margin: 15px 0;">
+                <span style="font-size: 18px; font-weight: bold; color: #1e293b; display: block;">${displayWord}</span>
+                <span style="font-size: 12px; color: #64748b; margin-top: 5px; display: block;">${subDisplay}</span>
+            </div>
+            <div style="text-align: center; margin-bottom: 10px;">
+                <button type="button" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 50%; width: 50px; height: 50px; color: #334155; font-size: 18px; cursor: pointer; transition: 0.2s;">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+            </div>
+            <button type="button" class="btn-prev-action">Analizar Pronunciación</button>
+        `
     } else {
         const optionInputs = document.querySelectorAll('.opt-text')
         let optionsHtml = ''
@@ -646,7 +729,7 @@ document.addEventListener('input', (e) => {
 })
 
 document.addEventListener('change', (e) => {
-    if (e.target.name === 'correctOption') {
+    if (e.target.name === 'correctOption' || e.target.id === 'pronunciationMode') {
         updatePreviewExercise()
     }
 })
@@ -671,9 +754,13 @@ if (lessonForm) {
 
         const questionType = document.getElementById('questionType').value
 
+        // Validación para tipo multimedia (Exigir al menos uno)
         if (questionType === 'multimedia') {
-            if (!generalFileInput || generalFileInput.files.length === 0) {
-                alert('Has seleccionado el tipo "Multimedia". Debes subir obligatoriamente un archivo (audio o imagen).');
+            const hasImage = imageFileInput && imageFileInput.files.length > 0;
+            const hasAudio = audioFileInput && audioFileInput.files.length > 0;
+            
+            if (!hasImage && !hasAudio) {
+                alert('Has seleccionado el tipo "Multimedia". Debes subir al menos un archivo de audio o una imagen.');
                 return;
             }
         }
@@ -701,24 +788,26 @@ if (lessonForm) {
         const userId = currentUserSession.user.id
 
         try {
-            let finalAudioUrl = null;
+            // Manejar subida de ambos archivos si existen
             let finalImageUrl = null;
+            let finalAudioUrl = null;
 
-            if (generalFileInput && generalFileInput.files.length > 0) {
-                const file = generalFileInput.files[0];
+            if (imageFileInput && imageFileInput.files.length > 0) {
+                const file = imageFileInput.files[0];
                 const fileExt = file.name.split('.').pop();
-                const fileName = `media_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-
+                const fileName = `img_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
                 const { error: uploadError } = await supabase.storage.from('lessons-media').upload(fileName, file);
-                if (uploadError) throw new Error('Error al subir archivo: ' + uploadError.message);
+                if (uploadError) throw new Error('Error al subir imagen: ' + uploadError.message);
+                finalImageUrl = supabase.storage.from('lessons-media').getPublicUrl(fileName).data.publicUrl;
+            }
 
-                const { data: publicUrlData } = supabase.storage.from('lessons-media').getPublicUrl(fileName);
-                
-                if (file.type.startsWith('audio/')) {
-                    finalAudioUrl = publicUrlData.publicUrl;
-                } else {
-                    finalImageUrl = publicUrlData.publicUrl;
-                }
+            if (audioFileInput && audioFileInput.files.length > 0) {
+                const file = audioFileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `audio_${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const { error: uploadError } = await supabase.storage.from('lessons-media').upload(fileName, file);
+                if (uploadError) throw new Error('Error al subir audio: ' + uploadError.message);
+                finalAudioUrl = supabase.storage.from('lessons-media').getPublicUrl(fileName).data.publicUrl;
             }
 
             let { data: levelData, error: levelError } = await supabase
@@ -753,7 +842,6 @@ if (lessonForm) {
                 lessonId = editLessonId;
 
                 await supabase.from('questions').delete().eq('lesson_id', lessonId);
-
             } else {
                 const { data: newLesson, error: insertLessonError } = await supabase
                     .from('lessons').insert([{ 
@@ -770,6 +858,7 @@ if (lessonForm) {
                 lessonId = newLesson.id
             }
 
+            // Insertar pregunta con ambas URLs disponibles
             const { data: newQuestion, error: insertQuestionError } = await supabase
                 .from('questions').insert([{ 
                     lesson_id: lessonId, 
@@ -818,6 +907,16 @@ if (lessonForm) {
                         })
                     }
                 })
+            } else if (questionType === 'pronunciation') {
+                const mode = document.getElementById('pronunciationMode').value
+                const target = document.getElementById('pronunciationTarget').value.trim()
+                const translation = document.getElementById('pronunciationTranslation').value.trim()
+
+                optionsData.push({ 
+                    question_id: questionId, 
+                    option_text: `${mode}|${target}|${translation}`, 
+                    is_correct: true 
+                })
             } else {
                 const checkedRadio = document.querySelector('input[name="correctOption"]:checked')
                 const correctRadioIndex = checkedRadio ? parseInt(checkedRadio.value) : 0
@@ -841,9 +940,10 @@ if (lessonForm) {
                 window.location.href = 'historial_lecciones.html';
             } else {
                 lessonForm.reset()
-                cachedMediaUrl = null
-                cachedMediaType = null
-                if (btnRemoveFile) btnRemoveFile.style.display = 'none';
+                cachedImageUrl = null
+                cachedAudioUrl = null
+                if (btnRemoveImage) btnRemoveImage.style.display = 'none';
+                if (btnRemoveAudio) btnRemoveAudio.style.display = 'none';
                 loadLanguages()
                 renderOptionsInputs()
                 updatePreviewExercise()
