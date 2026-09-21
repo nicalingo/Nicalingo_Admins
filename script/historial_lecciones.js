@@ -8,13 +8,46 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISH_KEY)
 let currentUserSession = null
 let currentUserRole = null
 
+// Helper visual Coco Ups Modal (cuando no sea solo el bloque interno)
+function showCocoUpsModal(errorMessage) {
+    let modal = document.getElementById('cocoUpsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cocoUpsModal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
+            align-items: center; z-index: 99999; backdrop-filter: blur(4px);
+            animation: fadeInModal 0.2s ease-out forwards;
+        `;
+        modal.innerHTML = `
+            <div style="background: #ffffff; padding: 25px 30px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border: 2px solid #fee2e2;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" style="width: 100px; height: auto; margin-bottom: 15px; animation: cocoBounce 1s infinite alternate ease-in-out;">
+                <h3 style="margin: 0 0 10px 0; color: #dc2626; font-size: 20px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
+                <p id="cocoUpsMsgText" style="font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 20px 0; word-break: break-word;"></p>
+                <button type="button" id="btnCocoUpsClose" style="background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;">Entendido</button>
+            </div>
+            <style>
+                @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes cocoBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+            </style>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('btnCocoUpsClose').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    document.getElementById('cocoUpsMsgText').textContent = errorMessage;
+    modal.style.display = 'flex';
+}
+
 // 1. Validar sesión, permisos y almacenar rol y sesión actual
 async function checkAuthAndRole() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-        alert('Acceso no autorizado. Inicia sesión primero.')
-        window.location.href = '../index.html'
+        showCocoUpsModal('Acceso no autorizado. Inicia sesión primero.')
+        setTimeout(() => { window.location.href = '../index.html' }, 1800)
         return false
     }
 
@@ -24,9 +57,9 @@ async function checkAuthAndRole() {
         .rpc('get_user_role', { user_id: session.user.id })
 
     if (error || !userRole || (userRole !== 'editor' && userRole !== 'admin')) {
-        alert('Permiso denegado. No eres editor ni administrador.')
+        showCocoUpsModal('Permiso denegado. No eres editor ni administrador.')
         await supabase.auth.signOut()
-        window.location.href = '../index.html'
+        setTimeout(() => { window.location.href = '../index.html' }, 1800)
         return false
     }
 
@@ -52,11 +85,35 @@ async function deleteLesson(lessonId) {
         loadLessonHistory()
     } catch (err) {
         console.error('Error al eliminar:', err.message)
-        alert('Hubo un error al eliminar la lección: ' + err.message)
+        showCocoUpsModal('Hubo un error al eliminar la lección: ' + err.message)
     }
 }
 
-// 3. Cargar las lecciones con filtros dinámicos y resolución de apodos de perfiles
+// 3. Cargar los idiomas desde Supabase para el select
+async function loadLanguages() {
+    try {
+        const { data: languages, error } = await supabase.from('languages').select('id, name');
+        if (error) throw error;
+
+        const langSelect = document.getElementById('filterLanguage');
+        languages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.id;
+            option.textContent = lang.name;
+            langSelect.appendChild(option);
+        });
+
+        const savedLang = localStorage.getItem('selectedLanguage');
+        if (savedLang) {
+            langSelect.value = savedLang;
+        }
+    } catch (err) {
+        console.error('Error al cargar idiomas:', err.message);
+        showCocoUpsModal('Error al cargar el catálogo de idiomas: ' + err.message);
+    }
+}
+
+// 4. Cargar las lecciones con filtros dinámicos y resolución de apodos
 async function loadLessonHistory() {
     const isAuthorized = await checkAuthAndRole()
     if (!isAuthorized) return
@@ -64,13 +121,20 @@ async function loadLessonHistory() {
     const loadingMsg = document.getElementById('loadingMessage')
     const historyTable = document.getElementById('historyTable')
     const tableBody = document.getElementById('historyTableBody')
+    
+    // Elementos del estado vacío/error (Coco Ups)
+    const emptyState = document.getElementById('emptyState')
+    const emptyStateText = document.getElementById('emptyStateText')
 
     loadingMsg.style.display = 'block'
     historyTable.style.display = 'none'
+    emptyState.style.display = 'none'
 
     try {
         const filterLevel = document.getElementById('filterLevel')?.value
         const filterLessonNum = document.getElementById('filterLessonNum')?.value
+        const filterLanguage = document.getElementById('filterLanguage')?.value
+        const filterCreator = document.getElementById('filterCreator')?.value
 
         let query = supabase
             .from('lessons')
@@ -85,7 +149,8 @@ async function loadLessonHistory() {
                     id,
                     level_number,
                     title,
-                    languages (
+                    language_id,
+                    languages!levels_language_id_fkey (
                         name
                     )
                 )
@@ -95,13 +160,9 @@ async function loadLessonHistory() {
             query = query.eq('created_by', currentUserSession.user.id)
         }
 
-        if (filterLevel) {
-            query = query.eq('levels.level_number', filterLevel)
-        }
-
-        if (filterLessonNum) {
-            query = query.eq('lesson_number', filterLessonNum)
-        }
+        if (filterLevel) query = query.eq('levels.level_number', filterLevel)
+        if (filterLessonNum) query = query.eq('lesson_number', filterLessonNum)
+        if (filterLanguage) query = query.eq('levels.language_id', filterLanguage)
 
         const { data: lessons, error } = await query.order('id', { ascending: false })
 
@@ -110,12 +171,11 @@ async function loadLessonHistory() {
         loadingMsg.style.display = 'none'
 
         if (!lessons || lessons.length === 0) {
-            loadingMsg.textContent = 'No se encontraron lecciones con los filtros seleccionados.'
-            loadingMsg.style.display = 'block'
+            emptyStateText.textContent = 'Ups... No se encontraron lecciones con los filtros seleccionados.'
+            emptyState.style.display = 'block'
             return
         }
 
-        // Obtener de forma única todos los IDs de creadores para buscar sus nicknames en la tabla profiles
         const creatorIds = [...new Set(lessons.map(l => l.created_by).filter(Boolean))]
         let profilesMap = {}
 
@@ -132,13 +192,30 @@ async function loadLessonHistory() {
             }
         }
 
+        let filteredLessons = lessons;
+        if (filterCreator && filterCreator.trim() !== '') {
+            filteredLessons = lessons.filter(lesson => {
+                const authorId = lesson.created_by || '';
+                const authorNickname = profilesMap[authorId] || authorId;
+                const searchTerm = filterCreator.toLowerCase().trim();
+                
+                return authorNickname.toLowerCase().includes(searchTerm) || 
+                       authorId.toLowerCase().includes(searchTerm);
+            });
+        }
+
+        if (filteredLessons.length === 0) {
+            emptyStateText.textContent = 'Ups... No se encontraron lecciones para este creador.'
+            emptyState.style.display = 'block'
+            return;
+        }
+
         tableBody.innerHTML = ''
-        lessons.forEach(lesson => {
+        filteredLessons.forEach(lesson => {
             const tr = document.createElement('tr')
             const levelNum = lesson.levels ? lesson.levels.level_number : 'N/A'
             const langName = lesson.levels && lesson.levels.languages ? lesson.levels.languages.name : 'Idioma general'
             
-            // Buscar el apodo en el mapa de perfiles; si no existe o está vacío, mostrar el ID (o un trozo de él)
             const authorId = lesson.created_by || 'Desconocido'
             const authorNickname = (profilesMap[authorId] && profilesMap[authorId].trim() !== '') 
                 ? profilesMap[authorId] 
@@ -178,12 +255,15 @@ async function loadLessonHistory() {
 
     } catch (err) {
         console.error('Error al cargar el historial:', err.message)
-        loadingMsg.textContent = 'Hubo un error al cargar el historial de lecciones.'
+        loadingMsg.style.display = 'none'
+        emptyStateText.textContent = '¡Ups! Ocurrió un error al cargar los datos: ' + err.message
+        emptyState.style.display = 'block'
+        showCocoUpsModal('Fallo al obtener historial de lecciones: ' + err.message)
     }
 }
 
-// 4. Escuchar eventos de cambio en los filtros para recargar automáticamente
-['filterLevel', 'filterLessonNum', 'filterCreator'].forEach(id => {
+// 5. Escuchar eventos de los inputs de texto (Número y Creador)
+['filterLessonNum', 'filterCreator'].forEach(id => {
     const element = document.getElementById(id)
     if (element) {
         element.addEventListener('input', loadLessonHistory)
@@ -191,10 +271,38 @@ async function loadLessonHistory() {
     }
 })
 
-// Cargar al iniciar la página
-loadLessonHistory()
+// 6. Filtros estáticos: Escuchar evento del IDIOMA y guardar en LocalStorage
+const filterLanguage = document.getElementById('filterLanguage');
+if (filterLanguage) {
+    filterLanguage.addEventListener('change', (e) => {
+        localStorage.setItem('selectedLanguage', e.target.value); 
+        loadLessonHistory();
+    });
+}
 
-// 5. Botón de Cerrar Sesión
+// NUEVO: Filtros estáticos: Escuchar evento del NIVEL y guardar en LocalStorage
+const filterLevel = document.getElementById('filterLevel');
+if (filterLevel) {
+    filterLevel.addEventListener('change', (e) => {
+        localStorage.setItem('selectedLevel', e.target.value); 
+        loadLessonHistory();
+    });
+}
+
+// 7. Cargar inicial (Restaurar nivel estático, cargar idiomas y luego historial)
+(async () => {
+    if (filterLevel) {
+        const savedLevel = localStorage.getItem('selectedLevel');
+        if (savedLevel) {
+            filterLevel.value = savedLevel;
+        }
+    }
+
+    await loadLanguages();
+    await loadLessonHistory();
+})();
+
+// 8. Botón de Cerrar Sesión
 document.getElementById('btnLogout').addEventListener('click', async () => {
     await supabase.auth.signOut()
     window.location.href = '../index.html'

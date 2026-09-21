@@ -5,18 +5,57 @@ const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// Helper visual Coco Ups Modal
+function showCocoUpsModal(errorMessage) {
+    let modal = document.getElementById('cocoUpsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cocoUpsModal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
+            align-items: center; z-index: 99999; backdrop-filter: blur(4px);
+            animation: fadeInModal 0.2s ease-out forwards;
+        `;
+        modal.innerHTML = `
+            <div style="background: #ffffff; padding: 25px 30px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border: 2px solid #fee2e2;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" style="width: 100px; height: auto; margin-bottom: 15px; animation: cocoBounce 1s infinite alternate ease-in-out;">
+                <h3 style="margin: 0 0 10px 0; color: #dc2626; font-size: 20px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
+                <p id="cocoUpsMsgText" style="font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 20px 0; word-break: break-word;"></p>
+                <button type="button" id="btnCocoUpsClose" style="background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;">Entendido</button>
+            </div>
+            <style>
+                @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes cocoBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+            </style>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('btnCocoUpsClose').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    document.getElementById('cocoUpsMsgText').textContent = errorMessage;
+    modal.style.display = 'flex';
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const btnLogout = document.getElementById('btnLogout');
     const adminSection = document.getElementById('adminSection');
     const unauthorizedSection = document.getElementById('unauthorizedSection');
     const roleForm = document.getElementById('roleForm');
+    
+    // Elementos de la tabla de usuarios
     const loadingUsersMsg = document.getElementById('loadingUsersMsg');
     const privilegedUsersTable = document.getElementById('privilegedUsersTable');
     const privilegedUsersBody = document.getElementById('privilegedUsersBody');
+    const searchAdminUser = document.getElementById('searchAdminUser');
+    const filterAdminRole = document.getElementById('filterAdminRole');
 
     const loadingLanguagesMsg = document.getElementById('loadingLanguagesMsg');
     const languagesTable = document.getElementById('languagesTable');
     const languagesBody = document.getElementById('languagesBody');
+
+    let allPrivilegedUsers = []; 
 
     if (btnLogout) {
         btnLogout.addEventListener('click', async () => {
@@ -28,8 +67,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-        alert('Inicia sesión primero.');
-        window.location.href = '../index.html';
+        showCocoUpsModal('Inicia sesión primero para acceder al módulo administrativo.');
+        setTimeout(() => { window.location.href = '../index.html'; }, 1800);
         return;
     }
 
@@ -48,6 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadLanguagesCatalog();
     }
 
+    // Carga de usuarios privilegiados
     async function loadPrivilegedUsers() {
         if (!loadingUsersMsg) return;
 
@@ -58,49 +98,71 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (error) throw error;
 
-            if (!profiles || profiles.length === 0) {
-                loadingUsersMsg.innerHTML = '<p style="color: #64748b;">No se encontraron usuarios registrados.</p>';
-                return;
-            }
-
-            privilegedUsersBody.innerHTML = '';
-            let countValid = 0;
-
-            profiles.forEach(user => {
-                const role = (user.role || '').toLowerCase().trim();
-                
-                if (role === 'admin' || role === 'editor') {
-                    countValid++;
-                    const tr = document.createElement('tr');
-                    
-                    const avatarUrl = user.avatar_url || user.avatar || '../assets/imagenes/coco/mascota.png';
-                    const nickname = user.nickname || 'Sin apodo';
-                    const email = user.email || 'Correo no disponible';
-                    const badgeClass = role === 'admin' ? 'admin' : 'editor';
-
-                    tr.innerHTML = `
-                        <td><img src="${avatarUrl}" alt="Avatar" class="user-avatar-cell" onerror="this.src='../assets/imagenes/coco/mascota.png'"></td>
-                        <td><strong>${nickname}</strong></td>
-                        <td>${email}</td>
-                        <td><span class="role-badge ${badgeClass}">${role}</span></td>
-                    `;
-                    privilegedUsersBody.appendChild(tr);
-                }
+            allPrivilegedUsers = (profiles || []).filter(u => {
+                const role = (u.role || '').toLowerCase().trim();
+                return role === 'admin' || role === 'editor';
             });
 
-            if (countValid === 0) {
-                loadingUsersMsg.innerHTML = '<p style="color: #64748b;">No hay usuarios con permisos especiales asignados actualmente.</p>';
-                privilegedUsersTable.style.display = 'none';
-            } else {
-                loadingUsersMsg.style.display = 'none';
-                privilegedUsersTable.style.display = 'table';
-            }
+            renderPrivilegedUsers(allPrivilegedUsers);
 
         } catch (err) {
             console.error('Error al cargar usuarios:', err);
             loadingUsersMsg.innerHTML = '<p style="color: #e53e3e;">¡Ups! Algo salió mal al cargar los usuarios.</p>';
+            showCocoUpsModal('No se pudieron obtener los usuarios autorizados: ' + err.message);
         }
     }
+
+    function renderPrivilegedUsers(usersToRender) {
+        privilegedUsersBody.innerHTML = '';
+
+        if (!usersToRender || usersToRender.length === 0) {
+            loadingUsersMsg.style.display = 'block';
+            loadingUsersMsg.innerHTML = '<p style="color: #64748b;">No se encontraron usuarios con los filtros actuales.</p>';
+            privilegedUsersTable.style.display = 'none';
+            return;
+        }
+
+        usersToRender.forEach(user => {
+            const role = (user.role || '').toLowerCase().trim();
+            const avatarUrl = user.avatar_url || user.avatar || '../assets/imagenes/coco/mascota.png';
+            const nickname = user.nickname || 'Sin apodo';
+            const email = user.email || 'Correo no disponible';
+            const badgeClass = role === 'admin' ? 'admin' : 'editor';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><img src="${avatarUrl}" alt="Avatar" class="user-avatar-cell" onerror="this.src='../assets/imagenes/coco/mascota.png'"></td>
+                <td><strong>${nickname}</strong></td>
+                <td>${email}</td>
+                <td><span class="role-badge ${badgeClass}">${role}</span></td>
+            `;
+            privilegedUsersBody.appendChild(tr);
+        });
+
+        loadingUsersMsg.style.display = 'none';
+        privilegedUsersTable.style.display = 'table';
+    }
+
+    function filterUsers() {
+        const searchTerm = searchAdminUser ? searchAdminUser.value.toLowerCase().trim() : '';
+        const roleTerm = filterAdminRole ? filterAdminRole.value.toLowerCase() : '';
+
+        const filtered = allPrivilegedUsers.filter(user => {
+            const nickname = (user.nickname || '').toLowerCase();
+            const email = (user.email || '').toLowerCase();
+            const role = (user.role || '').toLowerCase();
+
+            const matchesSearch = nickname.includes(searchTerm) || email.includes(searchTerm);
+            const matchesRole = roleTerm === '' || role === roleTerm;
+
+            return matchesSearch && matchesRole;
+        });
+
+        renderPrivilegedUsers(filtered);
+    }
+
+    if (searchAdminUser) searchAdminUser.addEventListener('input', filterUsers);
+    if (filterAdminRole) filterAdminRole.addEventListener('change', filterUsers);
 
     async function loadLanguagesCatalog() {
         if (!loadingLanguagesMsg) return;
@@ -112,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .order('id', { ascending: true });
 
             if (error) throw error;
-
             languagesBody.innerHTML = '';
 
             languages.forEach(lang => {
@@ -149,6 +210,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) {
             console.error('Error al cargar catálogo de idiomas:', err);
             loadingLanguagesMsg.innerHTML = '<p style="color: #e53e3e;">Error al cargar idiomas.</p>';
+            showCocoUpsModal('Fallo al cargar el catálogo de idiomas: ' + err.message);
         }
     }
 
@@ -170,7 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (err) {
             console.error('Error al actualizar idioma:', err);
-            alert('No se pudo actualizar el estado del idioma: ' + err.message);
+            showCocoUpsModal('No se pudo actualizar el estado del idioma: ' + err.message);
             if (switchInput) switchInput.checked = !newStatus;
         }
     }
@@ -196,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadPrivilegedUsers();
             } catch (err) {
                 console.error('Error al actualizar rol:', err);
-                alert('Hubo un error al actualizar el rol: ' + err.message);
+                showCocoUpsModal('Hubo un error al actualizar el rol: ' + err.message);
             }
         });
     }

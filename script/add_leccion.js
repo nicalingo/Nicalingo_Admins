@@ -15,13 +15,46 @@ let cachedLanguagesList = [];
 const urlParams = new URLSearchParams(window.location.search);
 const editLessonId = urlParams.get('edit');
 
+// Helper visual Coco Ups Modal
+function showCocoUpsModal(errorMessage) {
+    let modal = document.getElementById('cocoUpsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cocoUpsModal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
+            align-items: center; z-index: 99999; backdrop-filter: blur(4px);
+            animation: fadeInModal 0.2s ease-out forwards;
+        `;
+        modal.innerHTML = `
+            <div style="background: #ffffff; padding: 25px 30px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border: 2px solid #fee2e2;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" style="width: 100px; height: auto; margin-bottom: 15px; animation: cocoBounce 1s infinite alternate ease-in-out;">
+                <h3 style="margin: 0 0 10px 0; color: #dc2626; font-size: 20px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
+                <p id="cocoUpsMsgText" style="font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 20px 0; word-break: break-word;"></p>
+                <button type="button" id="btnCocoUpsClose" style="background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;">Entendido</button>
+            </div>
+            <style>
+                @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes cocoBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+            </style>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('btnCocoUpsClose').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    document.getElementById('cocoUpsMsgText').textContent = errorMessage;
+    modal.style.display = 'flex';
+}
+
 // --- AUTENTICACIÓN Y ROLES ---
 async function checkAuthAndRole() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-        alert('Acceso no autorizado. Inicia sesión primero.')
-        window.location.href = '../index.html'
+        showCocoUpsModal('Acceso no autorizado. Inicia sesión primero.')
+        setTimeout(() => { window.location.href = '../index.html' }, 1800)
         return
     }
 
@@ -31,9 +64,9 @@ async function checkAuthAndRole() {
         .rpc('get_user_role', { user_id: session.user.id })
 
     if (error || !userRole || (userRole !== 'editor' && userRole !== 'admin')) {
-        alert('Permiso denegado. No eres editor ni administrador.')
+        showCocoUpsModal('Permiso denegado. No eres editor ni administrador.')
         await supabase.auth.signOut()
-        window.location.href = '../index.html'
+        setTimeout(() => { window.location.href = '../index.html' }, 1800)
         return
     }
 
@@ -58,6 +91,7 @@ async function loadLanguages() {
     if (error) {
         console.error('Error al cargar idiomas:', error.message)
         select.innerHTML = '<option value="">Error al cargar idiomas</option>'
+        showCocoUpsModal('Error al cargar el catálogo de idiomas: ' + error.message)
         return
     }
 
@@ -134,7 +168,7 @@ function addOrderPhraseRow(value = '') {
             row.remove()
             updatePreviewExercise()
         } else {
-            alert('Debes tener al menos 2 palabras en la frase.')
+            showCocoUpsModal('Debes tener al menos 2 palabras en la frase.')
         }
     })
 
@@ -182,7 +216,7 @@ function addMultipleChoiceRow(value = '', isChecked = false) {
             reindexMultipleChoiceRows()
             updatePreviewExercise()
         } else {
-            alert('Debes tener al menos 2 opciones de respuesta.')
+            showCocoUpsModal('Debes tener al menos 2 opciones de respuesta.')
         }
     })
 
@@ -207,7 +241,7 @@ function addIntroductionRow(word = '', translation = '') {
             row.remove()
             updatePreviewExercise()
         } else {
-            alert('Debes tener al menos un par de vocabulario.')
+            showCocoUpsModal('Debes tener al menos un par de vocabulario.')
         }
     })
 
@@ -371,7 +405,6 @@ async function loadLessonDataForEdit(lessonId) {
             document.getElementById('questionText').value = q.question_text || '';
             document.getElementById('questionType').value = q.question_type || 'multiple_choice';
 
-            // Cargar multimedia de edición si existe
             cachedImageUrl = q.image_url || null;
             cachedAudioUrl = q.audio_url || null;
 
@@ -435,7 +468,7 @@ async function loadLessonDataForEdit(lessonId) {
 
     } catch (err) {
         console.error('Error al cargar lección para editar:', err.message);
-        alert('Hubo un error al cargar los datos de la lección: ' + err.message);
+        showCocoUpsModal('Hubo un error al cargar los datos de la lección: ' + err.message);
         renderOptionsInputs();
     }
 }
@@ -506,7 +539,7 @@ if (imageFileInput) {
         const file = e.target.files[0];
         if (file) {
             if (file.size > MAX_FILE_SIZE) {
-                alert('La imagen supera el límite máximo de 5 MB.');
+                showCocoUpsModal('La imagen supera el límite máximo de 5 MB.');
                 imageFileInput.value = ''; 
                 cachedImageUrl = null;
                 if (btnRemoveImage) btnRemoveImage.style.display = 'none';
@@ -528,7 +561,7 @@ if (audioFileInput) {
         const file = e.target.files[0];
         if (file) {
             if (file.size > MAX_FILE_SIZE) {
-                alert('El audio supera el límite máximo de 5 MB.');
+                showCocoUpsModal('El audio supera el límite máximo de 5 MB.');
                 audioFileInput.value = ''; 
                 cachedAudioUrl = null;
                 if (btnRemoveAudio) btnRemoveAudio.style.display = 'none';
@@ -748,19 +781,19 @@ if (lessonForm) {
         e.preventDefault()
 
         if (!currentUserSession) {
-            alert('No hay una sesión activa detectada.')
+            showCocoUpsModal('No hay una sesión activa detectada.')
             return
         }
 
         const questionType = document.getElementById('questionType').value
 
-        // Validación para tipo multimedia (Exigir al menos uno)
+        // Validación para tipo multimedia
         if (questionType === 'multimedia') {
             const hasImage = imageFileInput && imageFileInput.files.length > 0;
             const hasAudio = audioFileInput && audioFileInput.files.length > 0;
             
             if (!hasImage && !hasAudio) {
-                alert('Has seleccionado el tipo "Multimedia". Debes subir al menos un archivo de audio o una imagen.');
+                showCocoUpsModal('Has seleccionado el tipo "Multimedia". Debes subir al menos un archivo de audio o una imagen.');
                 return;
             }
         }
@@ -771,7 +804,7 @@ if (lessonForm) {
             const singleInput = document.getElementById('singleWordInput')
             const val = singleInput ? singleInput.value.trim() : ''
             if (!singleWordRegex.test(val)) {
-                alert('Error: "Ordenar la palabra" requiere estrictamente una sola palabra válida (sin espacios, guiones bajos ni símbolos). Ejemplo correcto: [Hola]');
+                showCocoUpsModal('Error: "Ordenar la palabra" requiere estrictamente una sola palabra válida (sin espacios, guiones bajos ni símbolos). Ejemplo correcto: [Hola]');
                 return;
             }
         }
@@ -788,7 +821,6 @@ if (lessonForm) {
         const userId = currentUserSession.user.id
 
         try {
-            // Manejar subida de ambos archivos si existen
             let finalImageUrl = null;
             let finalAudioUrl = null;
 
@@ -858,7 +890,6 @@ if (lessonForm) {
                 lessonId = newLesson.id
             }
 
-            // Insertar pregunta con ambas URLs disponibles
             const { data: newQuestion, error: insertQuestionError } = await supabase
                 .from('questions').insert([{ 
                     lesson_id: lessonId, 
@@ -950,7 +981,7 @@ if (lessonForm) {
             }
         } catch (err) {
             console.error('Error al guardar:', err.message)
-            alert('Hubo un error al guardar: ' + err.message)
+            showCocoUpsModal('Hubo un error al guardar la lección: ' + err.message)
         }
     })
 }

@@ -5,41 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
     <title>Historial de Lecciones - NicaLingo Admin</title>
-    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- CORREGIDO: Subir un nivel con '../' para encontrar la carpeta styles -->
-    <link rel="stylesheet" href="../styles/historial_lecciones.css">
+    <!-- CSS Global Unificado de Sinskira -->
+    <link rel="stylesheet" href="../styles/style.css">
 </head>
 <body>
 
-    <!-- Menú Lateral -->
-    <aside>
+    <aside id="sidebar" class="sidebar">
         <div class="sidebar-brand">
-            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+            <i class="fa-solid fa-graduation-cap"></i> 
+            <span class="nav-text" id="brandRoleText">NicaLingo Admin</span>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
-            <!-- Agregado correctamente al menú lateral -->
-            <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
-            <li><a href="edit_book.html"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
-            <li><a href="historial_lecciones.html" class="active"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-            <li><a href="admin_user.html"><i class="fa-solid fa-users"></i> Administradores</a></li>
+            <li><a href="#"><i class="fa-solid fa-house"></i> <span class="nav-text">Home</span></a></li>
+            
+            <li class="has-submenu show">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book"></i> <span class="nav-text">Lecciones</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_leccion.html"><span class="nav-text">Agregar</span></a></li>
+                    <li class="active"><a href="historial_lecciones.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book-open"></i> <span class="nav-text">Libros</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_book.html"><span class="nav-text">Agregar</span></a></li>
+                    <li><a href="edit_book.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Restringido a Administrador -->
+            <li class="has-submenu" data-role="admin-only">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-users-gear"></i> <span class="nav-text">Admin</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="admin_user.html"><span class="nav-text">Ajustes Generales</span></a></li>
+                    <li><a href="admin_user.html#permisos"><span class="nav-text">Gestión de Usuarios</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Restringido a Administrador -->
+            <li data-role="admin-only"><a href="#"><i class="fa-solid fa-school"></i> <span class="nav-text">Colegios</span></a></li>
         </ul>
-        <button id="btnLogout" class="btn-logout">
-            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
-        </button>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i> 
+                <span class="nav-text">Cerrar sesión</span>
+            </button>
+        </div>
     </aside>
 
-    <!-- Contenido Principal -->
     <main>
+        <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i> Menú</button>
+
         <header>
-            <h1>Gestión y Historial de Lecciones</h1>
+            <h1>Gestión e Historial de Lecciones</h1>
         </header>
 
-        <!-- Filtros Dinámicos -->
         <section class="filters-container">
+            <div class="filter-group">
+                <label for="filterLanguage">Idioma</label>
+                <select id="filterLanguage">
+                    <option value="">Todos los idiomas</option>
+                </select>
+            </div>
+
             <div class="filter-group">
                 <label for="filterLevel">Nivel</label>
                 <select id="filterLevel">
@@ -58,15 +90,19 @@
             </div>
 
             <div class="filter-group">
-                <label for="filterCreator">Creador (Correo)</label>
+                <label for="filterCreator">Creador (Correo o Nombre)</label>
                 <input type="text" id="filterCreator" placeholder="Filtrar por autor">
             </div>
         </section>
 
-        <!-- Tabla de Datos -->
         <section class="table-container">
             <div id="loadingMessage">
                 <i class="fa-solid fa-spinner fa-spin"></i> Cargando lecciones...
+            </div>
+            
+            <div id="emptyState" style="display: none;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" class="coco-bounce">
+                <h3 id="emptyStateText">No se encontraron resultados.</h3>
             </div>
             
             <table id="historyTable" class="history-table">
@@ -81,14 +117,12 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="historyTableBody">
-                    <!-- Las filas se renderizan dinámicamente desde el archivo JS -->
-                </tbody>
+                <tbody id="historyTableBody"></tbody>
             </table>
         </section>
     </main>
 
-    <!-- CORREGIDO: Subir un nivel con '../' para encontrar la carpeta script -->
+    <script src="../script/sidebar.js"></script>
     <script type="module" src="../script/historial_lecciones.js"></script>
 </body>
 </html>

@@ -6,165 +6,83 @@
     <title>NicaLingo - Administrar Usuarios y Configuración</title>
     <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../styles/add_leccion.css">
+    
+    <!-- CSS Global Unificado de Sinskira -->
+    <link rel="stylesheet" href="../styles/style.css">
     <style>
-        @keyframes floatMascot {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .users-table-container {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border: 1px solid #e2e8f0;
-            margin-top: 20px;
-            overflow-x: auto;
-        }
-
-        .admin-users-table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        .admin-users-table th {
-            background: #f8fafc;
-            color: #475569;
-            font-weight: 600;
-            padding: 12px 15px;
-            border-bottom: 2px solid #e2e8f0;
-        }
-
-        .admin-users-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
-            vertical-align: middle;
-        }
-
         .user-avatar-cell {
             width: 45px;
             height: 45px;
             border-radius: 50%;
             object-fit: cover;
-            border: 1px solid #cbd5e1;
-            background: #f1f5f9;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .role-badge.admin {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .role-badge.editor {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 24px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #cbd5e1;
-            transition: .3s;
-            border-radius: 24px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #34b3e4;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        .status-badge {
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .status-active {
-            color: #059669;
-        }
-
-        .status-inactive {
-            color: #dc2626;
+            border: 2px solid var(--sinskira-sage);
+            background: var(--sinskira-cream);
         }
     </style>
 </head>
 <body>
 
-    <aside>
+    <aside id="sidebar" class="sidebar">
         <div class="sidebar-brand">
-            <i class="fa-solid fa-graduation-cap"></i> NicaLingo Admin
+            <i class="fa-solid fa-graduation-cap"></i> 
+            <span class="nav-text" id="brandRoleText">NicaLingo Admin</span>
         </div>
         <ul class="sidebar-menu">
-            <li><a href="#"><i class="fa-solid fa-house"></i> Inicio</a></li>
-            <li><a href="add_leccion.html"><i class="fa-solid fa-book-medical"></i> Crear Lección</a></li>
-            <li><a href="add_book.html"><i class="fa-solid fa-book-open"></i> Agregar Libros</a></li>
-            <li><a href="edit_book.html"><i class="fa-solid fa-book-atlas"></i> Administrar Libros</a></li>
-            <li><a href="historial_lecciones.html"><i class="fa-solid fa-clock-rotate-left"></i> Historial</a></li>
-            <li><a href="admin_user.html" class="active"><i class="fa-solid fa-users"></i> Administradores</a></li>
+            <li><a href="#"><i class="fa-solid fa-house"></i> <span class="nav-text">Home</span></a></li>
+            
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book"></i> <span class="nav-text">Lecciones</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_leccion.html"><span class="nav-text">Agregar</span></a></li>
+                    <li><a href="historial_lecciones.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book-open"></i> <span class="nav-text">Libros</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_book.html"><span class="nav-text">Agregar</span></a></li>
+                    <li><a href="edit_book.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Restringido a Administrador -->
+            <li class="has-submenu show" data-role="admin-only">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-users-gear"></i> <span class="nav-text">Admin</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li class="active"><a href="admin_user.html"><span class="nav-text">Ajustes Generales</span></a></li>
+                    <li><a href="#permisos"><span class="nav-text">Gestión de Usuarios</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Restringido a Administrador -->
+            <li data-role="admin-only"><a href="#"><i class="fa-solid fa-school"></i> <span class="nav-text">Colegios</span></a></li>
         </ul>
-        <button id="btnLogout" class="btn-logout">
-            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
-        </button>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i> 
+                <span class="nav-text">Cerrar sesión</span>
+            </button>
+        </div>
     </aside>
 
     <main>
+        <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i> Menú</button>
+
         <header>
             <h1>AJUSTES Y GESTIÓN GENERAL</h1>
         </header>
 
         <div id="adminSection" style="display: none;">
-            <section class="editor-card">
+            <section class="editor-card" style="margin-bottom: 25px;">
                 <div class="card-header-bar">
                     <span class="step-badge">1</span>
                     <h2>Disponibilidad de Idiomas en la App</h2>
                 </div>
                 <div class="card-body">
-                    <div class="users-table-container">
-                        <div id="loadingLanguagesMsg" style="text-align: center; color: #64748b; padding: 20px;">
+                    <div class="table-container" style="box-shadow: none;">
+                        <div id="loadingLanguagesMsg" style="text-align: center; color: var(--text-secondary); padding: 20px;">
                             <i class="fa-solid fa-spinner fa-spin"></i> Cargando catálogo de idiomas...
                         </div>
                         <table class="admin-users-table" id="languagesTable" style="display: none;">
@@ -182,7 +100,7 @@
                 </div>
             </section>
 
-            <section class="editor-card" style="margin-bottom: 20px;">
+            <section class="editor-card" style="margin-bottom: 25px;">
                 <div class="card-header-bar">
                     <span class="step-badge">2</span>
                     <h2>Otorgar o Modificar Permisos de Usuario</h2>
@@ -208,14 +126,34 @@
                 </div>
             </section>
 
-            <section class="editor-card" style="margin-bottom: 20px;">
+            <section id="permisos" class="editor-card" style="margin-bottom: 25px;">
                 <div class="card-header-bar">
                     <span class="step-badge">3</span>
                     <h2>Usuarios con Permisos Especiales</h2>
                 </div>
                 <div class="card-body">
-                    <div class="users-table-container">
-                        <div id="loadingUsersMsg" style="text-align: center; color: #64748b; padding: 20px;">
+                    
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; align-items: center; background: var(--sinskira-cream); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label for="searchAdminUser" style="display: block; font-size: 12px; font-weight: bold; color: var(--sinskira-green); margin-bottom: 5px;">Buscar Usuario</label>
+                            <div style="position: relative;">
+                                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 10px; color: var(--sinskira-sage);"></i>
+                                <input type="text" id="searchAdminUser" placeholder="Buscar por apodo o correo..." style="width: 100%; padding: 8px 12px 8px 35px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; font-size:14px;">
+                            </div>
+                        </div>
+                        
+                        <div style="width: 200px;">
+                            <label for="filterAdminRole" style="display: block; font-size: 12px; font-weight: bold; color: var(--sinskira-green); margin-bottom: 5px;">Filtrar por Rol</label>
+                            <select id="filterAdminRole" style="width: 100%; padding: 9px; border: 1px solid var(--border-color); border-radius: 6px; outline: none; background: #fff; font-size:14px; cursor: pointer;">
+                                <option value="">Todos los roles</option>
+                                <option value="admin">Administrador</option>
+                                <option value="editor">Editor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-container" style="box-shadow: none;">
+                        <div id="loadingUsersMsg" style="text-align: center; color: var(--text-secondary); padding: 20px;">
                             <i class="fa-solid fa-spinner fa-spin"></i> Cargando usuarios autorizados...
                         </div>
                         <table class="admin-users-table" id="privilegedUsersTable" style="display: none;">
@@ -234,15 +172,16 @@
             </section>
         </div>
 
-        <div id="unauthorizedSection" style="display: none; padding: 30px; background: #fff5f5; border: 1px solid #feb2b2; border-radius: 12px; color: #c53030; text-align: center;">
+        <div id="unauthorizedSection" style="display: none; padding: 35px; background: var(--danger-bg); border: 1px solid #fecaca; border-radius: 12px; color: var(--danger-color); text-align: center;">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
-                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco ups" style="width: 80px; height: 80px; object-fit: contain; animation: floatMascot 2s ease-in-out infinite;">
-                <h3 style="margin: 0; font-size: 18px; color: #9b2c2c;">¡Ups! Acceso restringido</h3>
-                <p style="margin: 0; font-size: 14px; color: #742a2a;">Solo los administradores pueden gestionar la configuración y usuarios.</p>
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco ups" class="coco-bounce">
+                <h3 style="margin: 0; font-size: 18px; color: var(--danger-color);">¡Ups! Acceso restringido</h3>
+                <p style="margin: 0; font-size: 14px; color: #7f1d1d;">Solo los administradores pueden gestionar la configuración y usuarios.</p>
             </div>
         </div>
     </main>
 
+    <script src="../script/sidebar.js"></script>
     <script type="module" src="../script/admin_user.js"></script>
 </body>
 </html>

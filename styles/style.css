@@ -1,0 +1,948 @@
+/* ==========================================================================
+   SINSKIRA ADMIN - HOJA DE ESTILOS MAESTRA GLOBAL
+   ========================================================================== */
+
+:root {
+    /* Paleta Oficial Sinskira */
+    --sinskira-green: #093E37;
+    --sinskira-butter: #FCE392;
+    --sinskira-cream: #FFF8E7;
+    --sinskira-sage: #A5B772;
+
+    /* Semántica y Superficies */
+    --bg-page: #f8faf9;
+    --card-bg: #ffffff;
+    --text-primary: #1c2a27;
+    --text-secondary: #526360;
+    --border-color: #e0e8e5;
+    
+    /* Estados y Retroalimentación */
+    --danger-color: #d94336;
+    --danger-bg: #feebe8;
+    --success-color: #093E37;
+    --success-bg: #e2ede8;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   1. BARRA DE NAVEGACIÓN (SIDEBAR DESPLEGABLE Y RESPONSIVA)
+   ========================================================================== */
+aside, .sidebar {
+    width: 75px !important;
+    background-color: var(--sinskira-green);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0;
+    position: fixed;
+    height: 100vh;
+    z-index: 1000;
+    overflow-x: hidden;
+    white-space: nowrap;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+    box-shadow: 3px 0 12px rgba(9, 62, 55, 0.15);
+}
+
+aside:hover, aside.mobile-open,
+.sidebar:hover, .sidebar.mobile-open {
+    width: 255px !important;
+}
+
+.sidebar-brand {
+    font-size: 19px;
+    font-weight: bold;
+    padding: 0 20px 20px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--sinskira-butter);
+    border-bottom: 1px solid rgba(252, 227, 146, 0.2);
+    margin-bottom: 10px;
+}
+
+.sidebar-brand i {
+    color: var(--sinskira-butter);
+    font-size: 22px;
+}
+
+.nav-text {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+aside:hover .nav-text, aside.mobile-open .nav-text,
+.sidebar:hover .nav-text, .sidebar.mobile-open .nav-text {
+    opacity: 1;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sidebar-menu li a {
+    display: flex;
+    align-items: center;
+    padding: 13px 22px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    gap: 16px;
+    transition: background 0.2s, color 0.2s, border-left 0.2s;
+    font-size: 14.5px;
+    border-left: 4px solid transparent;
+}
+
+.sidebar-menu li a i.fa-solid:first-child {
+    min-width: 24px;
+    text-align: center;
+    font-size: 17px;
+    color: var(--sinskira-sage);
+}
+
+.sidebar-menu li a:hover, 
+.sidebar-menu li.active > a,
+.sidebar-menu li a.active {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--sinskira-butter);
+    border-left-color: var(--sinskira-butter);
+}
+
+.sidebar-menu li a:hover i.fa-solid:first-child,
+.sidebar-menu li.active > a i.fa-solid:first-child,
+.sidebar-menu li a.active i.fa-solid:first-child {
+    color: var(--sinskira-butter);
+}
+
+/* Submenús en barra de navegación */
+.submenu {
+    display: none;
+    list-style: none;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 4px 0;
+}
+
+.has-submenu.show .submenu,
+.has-submenu.open .submenu {
+    display: block;
+}
+
+.submenu li a {
+    padding-left: 62px !important;
+    font-size: 13px !important;
+    padding-top: 9px;
+    padding-bottom: 9px;
+    border-left: none !important;
+}
+
+.toggle-icon {
+    margin-left: auto;
+    transition: transform 0.3s;
+    opacity: 0;
+    font-size: 12px;
+    color: var(--sinskira-sage);
+}
+
+aside:hover .toggle-icon, aside.mobile-open .toggle-icon,
+.sidebar:hover .toggle-icon, .sidebar.mobile-open .toggle-icon {
+    opacity: 1;
+}
+
+.has-submenu.show .toggle-icon,
+.has-submenu.open .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-footer {
+    padding: 15px 18px;
+}
+
+.btn-logout {
+    background-color: rgba(217, 67, 54, 0.15);
+    color: #ff9d94;
+    border: 1px solid rgba(217, 67, 54, 0.4);
+    width: 100%;
+    padding: 11px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: all 0.25s ease;
+}
+
+.btn-logout i {
+    min-width: 24px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.btn-logout:hover {
+    background-color: var(--danger-color);
+    color: #ffffff;
+    border-color: var(--danger-color);
+}
+
+/* ==========================================================================
+   2. CONTENIDO PRINCIPAL Y CABECERAS
+   ========================================================================== */
+main {
+    flex-grow: 1;
+    margin-left: 75px;
+    padding: 35px 40px;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+    width: calc(100% - 75px);
+    overflow-y: auto;
+}
+
+header {
+    margin-bottom: 25px;
+}
+
+header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--sinskira-green);
+    letter-spacing: -0.3px;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: var(--sinskira-green);
+    color: var(--sinskira-butter);
+    border: none;
+    padding: 9px 15px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ==========================================================================
+   3. ESTRUCTURA DEL EDITOR (LECCIONES Y LIBROS)
+   ========================================================================== */
+.editor-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 370px;
+    gap: 25px;
+    align-items: start;
+    width: 100%;
+}
+
+.editor-main-column {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-width: 0;
+}
+
+.editor-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(9, 62, 55, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.card-header-bar {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid rgba(165, 183, 114, 0.3);
+}
+
+.card-header-bar h2 {
+    font-size: 14.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--sinskira-green);
+}
+
+.step-badge {
+    background: var(--sinskira-green);
+    color: var(--sinskira-butter);
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.card-body {
+    padding: 22px;
+}
+
+/* Formularios y campos */
+.form-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.form-group input, 
+.form-group select, 
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: #ffffff;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus {
+    border-color: var(--sinskira-sage);
+    box-shadow: 0 0 0 3px rgba(165, 183, 114, 0.25);
+}
+
+.file-input-custom {
+    padding: 8px !important;
+    background: var(--sinskira-cream) !important;
+    border: 1px dashed var(--sinskira-sage) !important;
+    cursor: pointer;
+}
+
+/* Pestañas internas de creación */
+.inner-tabs-layout {
+    display: flex;
+    gap: 20px;
+}
+
+.inner-tabs-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 190px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+    padding-right: 15px;
+}
+
+.tab-btn {
+    background: #fdfefe;
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
+    text-align: left;
+    border-radius: 8px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+}
+
+.tab-btn.active {
+    background: var(--sinskira-green);
+    color: var(--sinskira-butter);
+    border-color: var(--sinskira-green);
+}
+
+.inner-tabs-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Editor de Texto */
+.rich-text-editor-box {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.rte-toolbar {
+    background: var(--sinskira-cream);
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.rte-toolbar button {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 5px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--sinskira-green);
+}
+
+.rte-toolbar button:hover {
+    background: var(--sinskira-butter);
+}
+
+.rte-textarea {
+    border: none !important;
+    min-height: 120px;
+    resize: vertical;
+    border-radius: 0 !important;
+}
+
+/* ==========================================================================
+   4. VISTA PREVIA LATERAL Y ACCIONES
+   ========================================================================== */
+.editor-sidebar-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 25px;
+}
+
+.preview-card-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(9, 62, 55, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.preview-title-bar {
+    background: var(--sinskira-green);
+    color: var(--sinskira-butter);
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.preview-content-box {
+    padding: 18px;
+}
+
+.preview-content-box h4 {
+    margin: 0 0 6px 0;
+    color: var(--sinskira-green);
+    font-size: 16px;
+}
+
+.preview-badges {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.badge-pill {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    border: 1px solid var(--sinskira-sage);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.preview-question-box {
+    background: var(--sinskira-cream);
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(165, 183, 114, 0.4);
+    margin-top: 10px;
+}
+
+.btn-guardar-main {
+    background: var(--sinskira-green);
+    color: var(--sinskira-butter);
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 15.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(9, 62, 55, 0.2);
+    transition: transform 0.2s, background 0.2s;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-guardar-main:hover {
+    background: #0d4f46;
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   5. FILTROS Y HISTORIAL (LECCIONES Y LIBROS)
+   ========================================================================== */
+.filters-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(9, 62, 55, 0.04);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-group label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--sinskira-green);
+}
+
+.filter-group select, 
+.filter-group input {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary);
+    background: #ffffff;
+    outline: none;
+}
+
+.filter-group select:focus, 
+.filter-group input:focus {
+    border-color: var(--sinskira-sage);
+}
+
+/* Tabla de Lecciones */
+.table-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(9, 62, 55, 0.04);
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.history-table th, 
+.history-table td {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+.history-table th {
+    background-color: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+}
+
+.history-table tr:hover {
+    background-color: #fafcfb;
+}
+
+.xp-badge {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    border: 1px solid var(--sinskira-sage);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    border: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    transition: opacity 0.2s;
+}
+
+.btn-edit { background-color: var(--sinskira-green); color: var(--sinskira-butter); }
+.btn-delete { background-color: var(--danger-color); }
+.btn-action:hover { opacity: 0.85; }
+
+/* Tarjetas de Libros */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.book-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(9, 62, 55, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+
+.book-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--sinskira-sage);
+}
+
+.book-card-title {
+    color: var(--sinskira-green);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.book-card-tag {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    border: 1px solid var(--sinskira-sage);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   6. MÓDULO DE ADMINISTRACIÓN (USUARIOS, CATÁLOGO Y SWITCHES)
+   ========================================================================== */
+.admin-users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.admin-users-table th {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    font-weight: 700;
+    padding: 12px 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.admin-users-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.role-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.role-badge.admin {
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    border: 1px solid var(--sinskira-green);
+}
+
+.role-badge.editor {
+    background: #eef7f4;
+    color: #1a6d61;
+    border: 1px solid var(--sinskira-sage);
+}
+
+/* Switch Sinskira */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--sinskira-green);
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: var(--sinskira-butter);
+}
+
+.status-active { color: var(--sinskira-green); font-weight: 700; }
+.status-inactive { color: var(--danger-color); font-weight: 700; }
+
+/* ==========================================================================
+   7. ANIMACIONES DE COCO UPS Y ESTADOS VACÍOS
+   ========================================================================== */
+@keyframes bounce-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+
+.coco-bounce {
+    animation: bounce-soft 2s infinite ease-in-out;
+    filter: drop-shadow(0px 8px 12px rgba(9, 62, 55, 0.15));
+    max-width: 140px;
+}
+
+#emptyState {
+    text-align: center;
+    padding: 45px 20px;
+}
+
+#emptyState h3 {
+    margin-top: 15px;
+    color: var(--sinskira-green);
+    font-size: 16px;
+}
+
+/* ==========================================================================
+   8. ADAPTACIÓN RESPONSIVA (MEDIA QUERIES)
+   ========================================================================== */
+@media (max-width: 1100px) {
+    .editor-grid-layout {
+        grid-template-columns: 1fr;
+    }
+    .editor-sidebar-preview {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    aside, .sidebar {
+        transform: translateX(-100%);
+        width: 255px !important;
+    }
+    aside.mobile-open, .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    aside .nav-text, aside .toggle-icon,
+    .sidebar .nav-text, .sidebar .toggle-icon {
+        opacity: 1;
+    }
+    main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 20px 15px;
+    }
+    .mobile-menu-btn {
+        display: inline-flex;
+    }
+    .form-row-3 {
+        grid-template-columns: 1fr;
+    }
+    .inner-tabs-layout {
+        flex-direction: column;
+    }
+    .inner-tabs-menu {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 10px;
+        padding-right: 0;
+    }
+    .tab-btn {
+        flex: 1;
+        justify-content: center;
+        white-space: nowrap;
+    }
+}
+
+/* ==========================================================================
+   TARJETAS DE LIBROS (CORRECCIÓN DE DESBORDAMIENTO)
+   ========================================================================== */
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+.book-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(9, 62, 55, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, border-color 0.2s;
+    overflow: hidden; /* Evita que cualquier contenido se salga de la tarjeta */
+}
+
+.book-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--sinskira-sage);
+}
+
+/* Cabecera con imagen y textos en fila */
+.book-card-header {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+/* Restricción fija y adaptable para la portada del libro */
+.book-card-cover {
+    width: 75px;
+    min-width: 75px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--sinskira-cream);
+    display: block;
+}
+
+.book-card-info {
+    flex: 1;
+    min-width: 0; /* Obligatorio en flexbox para truncar textos largos */
+}
+
+.book-card-title {
+    color: var(--sinskira-green);
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.book-card-author {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.book-card-tag {
+    display: inline-block;
+    background: var(--sinskira-cream);
+    color: var(--sinskira-green);
+    border: 1px solid var(--sinskira-sage);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.book-card-desc {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 10px 0 15px 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Botones de acción inferiores */
+.book-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: auto;
+}

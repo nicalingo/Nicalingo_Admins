@@ -5,13 +5,45 @@ const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+// Helper visual Coco Ups Modal
+function showCocoUpsModal(errorMessage) {
+    let modal = document.getElementById('cocoUpsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'cocoUpsModal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center;
+            align-items: center; z-index: 99999; backdrop-filter: blur(4px);
+            animation: fadeInModal 0.2s ease-out forwards;
+        `;
+        modal.innerHTML = `
+            <div style="background: #ffffff; padding: 25px 30px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border: 2px solid #fee2e2;">
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" style="width: 100px; height: auto; margin-bottom: 15px; animation: cocoBounce 1s infinite alternate ease-in-out;">
+                <h3 style="margin: 0 0 10px 0; color: #dc2626; font-size: 20px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
+                <p id="cocoUpsMsgText" style="font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 20px 0; word-break: break-word;"></p>
+                <button type="button" id="btnCocoUpsClose" style="background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;">Entendido</button>
+            </div>
+            <style>
+                @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+                @keyframes cocoBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+            </style>
+        `;
+        document.body.appendChild(modal);
+        document.getElementById('btnCocoUpsClose').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    }
+    document.getElementById('cocoUpsMsgText').textContent = errorMessage;
+    modal.style.display = 'flex';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const btnLogout = document.getElementById('btnLogout');
     const searchInput = document.getElementById('searchBook');
     const filterTagSelect = document.getElementById('filterTag');
     const loadingMessage = document.getElementById('loadingMessage');
 
-    // Creamos o seleccionamos el contenedor de tarjetas en el DOM
     const tableContainer = document.querySelector('.table-container');
     let booksContainer = document.getElementById('booksContainer');
     
@@ -44,13 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) throw error;
 
             allBooks = data || [];
-            filterBooks(); // Renderizar aplicando filtros iniciales
+            filterBooks();
 
         } catch (err) {
             console.error('Error al cargar libros:', err);
             if (loadingMessage) {
                 loadingMessage.innerHTML = '<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error al conectar con la base de datos.</span>';
             }
+            showCocoUpsModal('No se pudieron obtener las historias de la biblioteca: ' + err.message);
         }
     }
 
@@ -109,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('');
 
-        // Eventos para eliminar y editar
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.dataset.id;
@@ -140,11 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchBooks();
         } catch (err) {
             console.error('Error al eliminar:', err);
-            alert('Hubo al eliminar el libro: ' + err.message);
+            showCocoUpsModal('Hubo un error al eliminar el libro: ' + err.message);
         }
     }
 
-    // Función unificada de filtrado (Texto y Etiqueta)
     function filterBooks() {
         const term = searchInput ? searchInput.value.toLowerCase() : '';
         const selectedTag = filterTagSelect ? filterTagSelect.value.toLowerCase() : '';
