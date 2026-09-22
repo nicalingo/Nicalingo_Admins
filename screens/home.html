@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NicaLingo - Home & Soporte</title>
+    <link rel="icon" href="../assets/imagenes/coco/mascota.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- CSS Global Unificado de Sinskira -->
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+<body>
+
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i> 
+            <span class="nav-text" id="brandRoleText">NicaLingo Admin</span>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="home.html"><i class="fa-solid fa-house"></i> <span class="nav-text">Home</span></a></li>
+            
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book"></i> <span class="nav-text">Lecciones</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_leccion.html"><span class="nav-text">Agregar</span></a></li>
+                    <li><a href="historial_lecciones.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <li class="has-submenu">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-book-open"></i> <span class="nav-text">Libros</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="add_book.html"><span class="nav-text">Agregar</span></a></li>
+                    <li><a href="edit_book.html"><span class="nav-text">Historial</span></a></li>
+                </ul>
+            </li>
+
+            <!-- Restringido a Administrador -->
+            <li class="has-submenu" data-role="admin-only">
+                <a href="#" class="submenu-toggle"><i class="fa-solid fa-users-gear"></i> <span class="nav-text">Admin</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
+                <ul class="submenu">
+                    <li><a href="admin_user.html"><span class="nav-text">Ajustes Generales</span></a></li>
+                </ul>
+            </li>
+
+            <li data-role="admin-only"><a href="#"><i class="fa-solid fa-school"></i> <span class="nav-text">Colegios</span></a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn-logout" title="Cerrar sesión">
+                <i class="fa-solid fa-right-from-bracket"></i> 
+                <span class="nav-text">Cerrar sesión</span>
+            </button>
+        </div>
+    </aside>
+
+    <main>
+        <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i> Menú</button>
+
+        <header>
+            <h1>BANDEJA DE ENTRADA Y SOPORTE</h1>
+        </header>
+
+        <section class="editor-card">
+            <div class="card-header-bar">
+                <span class="step-badge"><i class="bi bi-inbox-fill"></i></span>
+                <h2>Tickets y Mensajes de Usuarios</h2>
+            </div>
+            
+            <div class="card-body">
+                <div class="inbox-layout">
+                    <!-- Panel lateral con filtros y buscador -->
+                    <div class="inbox-sidebar">
+                        <div class="inbox-search">
+                            <div class="search-input-wrapper">
+                                <i class="bi bi-search"></i>
+                                <input type="text" id="searchUserInput" placeholder="Buscar por nombre, correo o ID...">
+                            </div>
+
+                            <!-- Filtro 1: Estado del Chat -->
+                            <div class="filter-wrapper">
+                                <select id="chatFilterSelect">
+                                    <option value="todos">Todos los estados</option>
+                                    <option value="pendientes">Pendientes (último msg usuario)</option>
+                                    <option value="respondidos">Respondidos por staff</option>
+                                    <option value="con_imagenes">Con capturas adjuntas</option>
+                                </select>
+                            </div>
+
+                            <!-- Filtro 2: Tipo de Solicitud / Categoría (Limpio sin emojis) -->
+                            <div class="filter-wrapper">
+                                <select id="categoryFilterSelect">
+                                    <option value="todas">Todas las categorías</option>
+                                    <option value="error">Error / Bug</option>
+                                    <option value="sugerencia">Sugerencia</option>
+                                    <option value="duda">Duda o Pregunta</option>
+                                    <option value="embajador">Solicitud de Embajador</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <ul class="inbox-list" id="inboxUsersList">
+                            <li class="inbox-loading">
+                                <i class="bi bi-arrow-repeat spin-icon"></i> Cargando mensajes...
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Área de conversación -->
+                    <div class="chat-area">
+                        <div class="chat-header">
+                            <div>
+                                <h3 id="activeChatUser" style="margin: 0; font-size: 16px;">Selecciona una conversación</h3>
+                                <div id="activeChatEmail" style="font-size: 13px; color: var(--sinskira-green, #1E3A8A); font-weight: 500; margin-top: 2px;"></div>
+                                <div id="activeChatId" style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;"></div>
+                            </div>
+                            <button id="deleteChatBtn" class="btn-delete-chat" style="display: none;" title="Eliminar todo el historial con este usuario">
+                                <i class="bi bi-trash3-fill"></i> Eliminar Chat
+                            </button>
+                        </div>
+
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-empty-state">
+                                <i class="bi bi-chat-dots" style="font-size: 40px; display: block; margin-bottom: 8px;"></i>
+                                <p>Selecciona un usuario a la izquierda para revisar sus dudas, ver capturas y responder.</p>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de respuesta -->
+                        <form id="replyForm" class="chat-input-bar" style="display: none;">
+                            <input type="text" id="replyMessageInput" placeholder="Escribe tu respuesta como soporte..." required autocomplete="off">
+                            <button type="submit" class="btn-chat-send">
+                                <i class="bi bi-send-fill"></i> Responder
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../script/sidebar.js"></script>
+    <script type="module" src="../script/home.js"></script>
+</body>
+</html>

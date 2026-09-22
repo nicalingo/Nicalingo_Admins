@@ -946,3 +946,417 @@ input:checked + .slider:before {
     padding-top: 12px;
     margin-top: auto;
 }
+
+/* =======================================================
+   MÓDULO: BANDEJA DE ENTRADA Y SOPORTE (Sinskira Theme)
+   ======================================================= */
+.inbox-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fff;
+    min-height: 580px;
+    overflow: hidden;
+}
+
+.inbox-sidebar {
+    border-right: 1px solid var(--border-color);
+    background: var(--sinskira-cream);
+    display: flex;
+    flex-direction: column;
+}
+
+.inbox-search {
+    position: relative;
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.inbox-search i {
+    position: absolute;
+    left: 22px;
+    top: 22px;
+    color: var(--sinskira-sage, #78909c);
+    font-size: 13px;
+}
+
+.inbox-search input {
+    width: 100%;
+    padding: 8px 12px 8px 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    background: #fff;
+}
+
+.inbox-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.inbox-loading {
+    padding: 25px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.inbox-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s ease;
+}
+
+.inbox-item:hover,
+.inbox-item.active {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.inbox-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--sinskira-green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.inbox-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inbox-name {
+    font-weight: bold;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inbox-snippet {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Chat container */
+.chat-area {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.chat-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--sinskira-cream);
+}
+
+.chat-header h3 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--text-primary);
+}
+
+.chat-header span {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 440px;
+}
+
+.chat-empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.chat-empty-state i {
+    font-size: 42px;
+    color: var(--border-color);
+    margin-bottom: 10px;
+}
+
+.chat-bubble {
+    max-width: 72%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.bubble-user {
+    align-self: flex-start;
+    background: var(--sinskira-cream);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.bubble-admin {
+    align-self: flex-end;
+    background: var(--sinskira-green);
+    color: #fff;
+}
+
+.bubble-img {
+    max-width: 220px;
+    border-radius: 8px;
+    margin-top: 6px;
+    display: block;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chat-input-bar {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 10px;
+    background: var(--sinskira-cream);
+}
+
+.chat-input-bar input {
+    flex: 1;
+    padding: 9px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    background: #fff;
+}
+
+@media (max-width: 900px) {
+    .inbox-layout {
+        grid-template-columns: 1fr;
+    }
+    .inbox-sidebar {
+        max-height: 250px;
+    }
+}
+
+/* --- BARRA DE ENTRADA DEL CHAT --- */
+.chat-input-bar {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--sinskira-cream);
+    box-sizing: border-box;
+}
+
+.chat-input-bar input {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    padding: 11px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.chat-input-bar input:focus {
+    border-color: var(--sinskira-green, #13392f);
+}
+
+.btn-chat-send {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 120px;
+    padding: 11px 20px;
+    background-color: var(--sinskira-green, #13392f);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap;
+}
+
+.btn-chat-send:hover {
+    filter: brightness(1.1);
+}
+
+.btn-chat-send:active {
+    transform: scale(0.98);
+}
+
+/* --- BARRA LATERAL DE BÚSQUEDA Y FILTROS --- */
+.inbox-search {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--sinskira-cream);
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sinskira-sage, #78909c);
+    font-size: 13px;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+.filter-wrapper select {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 12px;
+    background: #ffffff;
+    color: var(--text-primary);
+    outline: none;
+    cursor: pointer;
+}
+
+/* --- HEADER DEL CHAT & BOTÓN ELIMINAR --- */
+.chat-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--sinskira-cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-delete-chat {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete-chat:hover {
+    background: #e74c3c;
+    color: #ffffff;
+    border-color: #e74c3c;
+}
+
+/* --- BURBUJAS Y FIRMA DIFERENCIADA --- */
+.bubble-admin {
+    align-self: flex-end;
+    background: var(--sinskira-green, #13392f);
+    color: #ffffff;
+    padding: 12px 14px 10px 14px;
+    border-radius: 12px 12px 2px 12px;
+}
+
+.bubble-user {
+    align-self: flex-start;
+    background: var(--sinskira-cream);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 14px;
+    border-radius: 12px 12px 12px 2px;
+}
+
+/* Caja de firma diferenciada y destacada */
+.msg-signature-card {
+    margin-top: 10px;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    font-size: 11px;
+}
+
+.badge-role {
+    background: #ffd166;
+    color: #13392f;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.badge-bot {
+    background: #60a5fa;
+    color: #0f172a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.sig-name {
+    font-weight: 600;
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sig-detail {
+    color: rgba(255, 255, 255, 0.85);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+}
