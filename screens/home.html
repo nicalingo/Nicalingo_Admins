@@ -70,7 +70,7 @@
                 <h2>Tickets y Mensajes de Usuarios</h2>
             </div>
             
-            <div class="card-body">
+            <div class="card-body" style="padding: 15px;">
                 <div class="inbox-layout">
                     <!-- Panel lateral con filtros y buscador -->
                     <div class="inbox-sidebar">
@@ -90,13 +90,14 @@
                                 </select>
                             </div>
 
-                            <!-- Filtro 2: Tipo de Solicitud / Categoría (Limpio sin emojis) -->
+                            <!-- Filtro 2: Tipo de Solicitud / Categoría -->
                             <div class="filter-wrapper">
                                 <select id="categoryFilterSelect">
                                     <option value="todas">Todas las categorías</option>
+                                    <option value="duda">Duda o Pregunta</option>
                                     <option value="error">Error / Bug</option>
                                     <option value="sugerencia">Sugerencia</option>
-                                    <option value="duda">Duda o Pregunta</option>
+                                    <option value="pagos">Pagos y Devoluciones</option>
                                     <option value="embajador">Solicitud de Embajador</option>
                                 </select>
                             </div>
@@ -129,11 +130,11 @@
                             </div>
                         </div>
 
-                        <!-- Formulario de respuesta -->
+                        <!-- Formulario de respuesta ajustado -->
                         <form id="replyForm" class="chat-input-bar" style="display: none;">
                             <input type="text" id="replyMessageInput" placeholder="Escribe tu respuesta como soporte..." required autocomplete="off">
                             <button type="submit" class="btn-chat-send">
-                                <i class="bi bi-send-fill"></i> Responder
+                                <i class="bi bi-send-fill"></i> <span class="send-text">Responder</span>
                             </button>
                         </form>
                     </div>

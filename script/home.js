@@ -23,7 +23,7 @@ const searchUserInput = document.getElementById('searchUserInput');
 const chatFilterSelect = document.getElementById('chatFilterSelect');
 const categoryFilterSelect = document.getElementById('categoryFilterSelect');
 
-// 1. Cargar datos
+// 1. Cargar datos y verificar rol del usuario
 async function cargarConversaciones() {
     try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -31,7 +31,7 @@ async function cargarConversaciones() {
         if (!session) {
             inboxList.innerHTML = `
                 <li class="inbox-loading" style="color: var(--danger-color, #dc2626);">
-                    <i class="fa-solid fa-triangle-exclamation"></i><br>
+                    <i class="bi bi-exclamation-triangle-fill"></i><br>
                     Debes iniciar sesión con tu cuenta de Admin/Editor.
                 </li>`;
             return;
@@ -47,6 +47,12 @@ async function cargarConversaciones() {
 
         if (myProfile?.role) {
             currentStaffRole = myProfile.role.toLowerCase();
+        }
+
+        // Si es editor, restringir el selector de categorías a solo "Duda o Pregunta"
+        if (currentStaffRole === 'editor' && categoryFilterSelect) {
+            categoryFilterSelect.innerHTML = `<option value="duda" selected>Dudas y Preguntas (Solo lectura autorizada)</option>`;
+            categoryFilterSelect.disabled = true;
         }
 
         const { data: mensajes, error } = await supabase
@@ -106,16 +112,15 @@ async function cargarConversaciones() {
     }
 }
 
-// 2. Función auxiliar para obtener la categoría de una conversación
+// 2. Auxiliar para detectar la categoría del chat
 function obtenerCategoriaChat(msgs) {
-    // Busca si algún mensaje del usuario trajo categoría explícita
     for (let i = msgs.length - 1; i >= 0; i--) {
         if (!msgs[i].es_respuesta_admin && msgs[i].categoria) {
             return msgs[i].categoria.toLowerCase();
         }
     }
-    // Detección automática de respaldo por palabras clave si no se especificó
     const textoCompleto = msgs.map(m => m.mensaje.toLowerCase()).join(' ');
+    if (textoCompleto.includes('pago') || textoCompleto.includes('devolución') || textoCompleto.includes('devolucion') || textoCompleto.includes('cobro') || textoCompleto.includes('tarjeta') || textoCompleto.includes('reembolso')) return 'pagos';
     if (textoCompleto.includes('embajador') || textoCompleto.includes('representar') || textoCompleto.includes('cargo')) return 'embajador';
     if (textoCompleto.includes('error') || textoCompleto.includes('fallo') || textoCompleto.includes('bug') || textoCompleto.includes('no funciona')) return 'error';
     if (textoCompleto.includes('sugiero') || textoCompleto.includes('sugerencia') || textoCompleto.includes('idea') || textoCompleto.includes('podrían agregar')) return 'sugerencia';
@@ -124,18 +129,28 @@ function obtenerCategoriaChat(msgs) {
 
 function formatearEtiquetaCategoria(cat) {
     switch (cat) {
-        case 'error': return '<span style="background:#fee2e2; color:#991b1b; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">🐛 Error</span>';
-        case 'sugerencia': return '<span style="background:#fef3c7; color:#92400e; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">💡 Sugerencia</span>';
-        case 'embajador': return '<span style="background:#ede9fe; color:#5b21b6; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">🎖️ Embajador</span>';
-        default: return '<span style="background:#e0f2fe; color:#075985; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:bold;">❓ Duda</span>';
+        case 'error': 
+            return '<span class="badge-cat-error"><i class="bi bi-bug-fill"></i> Error</span>';
+        case 'sugerencia': 
+            return '<span class="badge-cat-sugerencia"><i class="bi bi-lightbulb-fill"></i> Sugerencia</span>';
+        case 'pagos': 
+            return '<span class="badge-cat-pagos"><i class="bi bi-credit-card-2-front-fill"></i> Pagos</span>';
+        case 'embajador': 
+            return '<span class="badge-cat-embajador"><i class="bi bi-award-fill"></i> Embajador</span>';
+        default: 
+            return '<span class="badge-cat-duda"><i class="bi bi-question-circle-fill"></i> Duda</span>';
     }
 }
 
-// 3. Filtros combinados (Texto + Estado + Categoría)
+// 3. Filtros combinados y restricción estricta por rol
 function aplicarFiltros() {
     const texto = searchUserInput ? searchUserInput.value.trim().toLowerCase() : '';
     const tipoEstado = chatFilterSelect ? chatFilterSelect.value : 'todos';
-    const tipoCategoria = categoryFilterSelect ? categoryFilterSelect.value : 'todas';
+    
+    // Si el usuario es editor, forzar filtro a 'duda'
+    const tipoCategoria = (currentStaffRole === 'editor') 
+        ? 'duda' 
+        : (categoryFilterSelect ? categoryFilterSelect.value : 'todas');
 
     const userIds = Object.keys(conversaciones);
     inboxList.innerHTML = '';
@@ -148,7 +163,11 @@ function aplicarFiltros() {
         const ultimoMsg = msgs[msgs.length - 1];
         const categoriaChat = obtenerCategoriaChat(msgs);
 
-        // Filtro por texto
+        // Bloqueo de seguridad: a editores SOLO se les permite ver categoría 'duda'
+        if (currentStaffRole === 'editor' && categoriaChat !== 'duda') {
+            return false;
+        }
+
         const coincideTexto = !texto || 
             userId.toLowerCase().includes(texto) || 
             nombre.includes(texto) || 
@@ -157,12 +176,10 @@ function aplicarFiltros() {
 
         if (!coincideTexto) return false;
 
-        // Filtro por estado
         if (tipoEstado === 'pendientes' && (!ultimoMsg || ultimoMsg.es_respuesta_admin !== false)) return false;
         if (tipoEstado === 'respondidos' && (!ultimoMsg || ultimoMsg.es_respuesta_admin !== true)) return false;
         if (tipoEstado === 'con_imagenes' && !msgs.some(m => !!m.imagen_url)) return false;
 
-        // Filtro por categoría
         if (tipoCategoria !== 'todas' && categoriaChat !== tipoCategoria) return false;
 
         return true;
@@ -184,11 +201,12 @@ function aplicarFiltros() {
         const iniciales = nombre.substring(0, 2).toUpperCase();
 
         const li = document.createElement('li');
-        li.className = `inbox-item ${usuarioSeleccionadoId === userId ? 'active' : ''}`;
+        // Se añade la clase con el borde izquierdo de color por motivo
+        li.className = `inbox-item cat-border-${categoriaChat} ${usuarioSeleccionadoId === userId ? 'active' : ''}`;
         li.innerHTML = `
             <div class="inbox-avatar">${iniciales}</div>
             <div class="inbox-item-info">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
                     <span class="inbox-name">${nombre}</span>
                     ${formatearEtiquetaCategoria(categoriaChat)}
                 </div>
@@ -207,7 +225,7 @@ function aplicarFiltros() {
     });
 }
 
-// 4. Mostrar conversación activa
+// 4. Mostrar conversación
 function mostrarConversacion(userId) {
     usuarioSeleccionadoId = userId;
     const perfil = perfilesUsuarios[userId] || {};
@@ -217,9 +235,9 @@ function mostrarConversacion(userId) {
     const nombre = perfil.nickname || `Usuario ${userId.substring(0, 8)}...`;
     const email = perfil.email || 'Sin correo asociado';
 
-    activeChatUser.innerHTML = `<i class="fa-regular fa-user"></i> ${nombre} ${formatearEtiquetaCategoria(categoriaChat)}`;
-    activeChatEmail.innerHTML = `<i class="fa-regular fa-envelope"></i> ${email}`;
-    activeChatId.innerHTML = `<i class="fa-solid fa-fingerprint"></i> ID: ${userId}`;
+    activeChatUser.innerHTML = `<i class="bi bi-person-fill"></i> ${nombre} ${formatearEtiquetaCategoria(categoriaChat)}`;
+    activeChatEmail.innerHTML = `<i class="bi bi-envelope-at-fill"></i> ${email}`;
+    activeChatId.innerHTML = `<i class="bi bi-fingerprint"></i> ID: ${userId}`;
     
     replyForm.style.display = 'flex';
     deleteChatBtn.style.display = 'inline-flex';
@@ -250,23 +268,23 @@ function mostrarConversacion(userId) {
                 if (esAdminObservador) {
                     htmlContent += `
                         <div class="msg-signature-card">
-                            <span class="badge-role">${staffRole}</span>
-                            <span class="sig-name"><i class="fa-regular fa-user"></i> ${staffNombre}</span>
-                            <span class="sig-detail"><i class="fa-regular fa-envelope"></i> ${staffEmail}</span>
-                            <span class="sig-detail"><i class="fa-solid fa-fingerprint"></i> ${staffId}</span>
+                            <span class="badge-role"><i class="bi bi-shield-check"></i> ${staffRole}</span>
+                            <span class="sig-name"><i class="bi bi-person-badge"></i> ${staffNombre}</span>
+                            <span class="sig-detail"><i class="bi bi-envelope-fill"></i> ${staffEmail}</span>
+                            <span class="sig-detail"><i class="bi bi-fingerprint"></i> ${staffId}</span>
                         </div>`;
                 } else {
                     htmlContent += `
                         <div class="msg-signature-card">
-                            <span class="badge-role">${staffRole}</span>
-                            <span class="sig-name"><i class="fa-regular fa-user"></i> Respondido por: ${staffNombre}</span>
+                            <span class="badge-role"><i class="bi bi-shield-check"></i> ${staffRole}</span>
+                            <span class="sig-name"><i class="bi bi-person-badge"></i> Respondido por: ${staffNombre}</span>
                         </div>`;
                 }
             } else {
                 htmlContent += `
                     <div class="msg-signature-card">
-                        <span class="badge-bot">BOT</span>
-                        <span class="sig-name"><i class="fa-solid fa-robot"></i> Sistema Automático</span>
+                        <span class="badge-bot"><i class="bi bi-robot"></i> BOT</span>
+                        <span class="sig-name">Sistema Automático</span>
                     </div>`;
             }
         }
@@ -287,7 +305,7 @@ function resetearVistaChat() {
     deleteChatBtn.style.display = 'none';
     chatMessages.innerHTML = `
         <div class="chat-empty-state">
-            <i class="fa-regular fa-comments"></i>
+            <i class="bi bi-chat-dots" style="font-size: 40px; display: block; margin-bottom: 8px;"></i>
             <p>Selecciona un usuario a la izquierda para revisar sus dudas, ver capturas y responder.</p>
         </div>`;
 }
@@ -324,7 +342,7 @@ deleteChatBtn.addEventListener('click', async () => {
     if (!confirm(`¿Eliminar todos los mensajes con "${usuarioNombre}"?`)) return;
 
     deleteChatBtn.disabled = true;
-    deleteChatBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Eliminando...`;
+    deleteChatBtn.innerHTML = `<i class="bi bi-arrow-repeat spin-icon"></i> Eliminando...`;
 
     const { error } = await supabase
         .from('mensajes_soporte')
@@ -332,7 +350,7 @@ deleteChatBtn.addEventListener('click', async () => {
         .eq('user_id', usuarioSeleccionadoId);
 
     deleteChatBtn.disabled = false;
-    deleteChatBtn.innerHTML = `<i class="fa-solid fa-trash-can"></i> Eliminar Chat`;
+    deleteChatBtn.innerHTML = `<i class="bi bi-trash3-fill"></i> Eliminar Chat`;
 
     if (error) {
         alert('Error al eliminar chat: ' + error.message);
