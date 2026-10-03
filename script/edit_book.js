@@ -68,9 +68,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (loadingMessage) loadingMessage.style.display = 'block';
             booksContainer.style.display = 'none';
 
+            // Consulta relacional con library_story_translations y languages
             const { data, error } = await supabase
                 .from('library_stories')
-                .select('*')
+                .select(`
+                    id,
+                    title,
+                    description,
+                    content,
+                    image_asset,
+                    content_image_asset,
+                    tag,
+                    author,
+                    created_at,
+                    library_story_translations (
+                        id,
+                        language_id,
+                        title,
+                        description,
+                        languages (
+                            id,
+                            name
+                        )
+                    )
+                `)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -118,7 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? `<img src="${book.image_asset}" alt="Portada" class="book-card-cover">` 
                 : `<div class="book-card-cover" style="display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; text-align: center;">Sin imagen</div>`;
 
-            const authorName = book.author || book.autor || 'Autor desconocido';
+            const authorName = book.author || 'Autor desconocido';
+            const translations = book.library_story_translations || [];
+
+            // Construir badges de los idiomas disponibles
+            const languagesBadges = translations.length > 0
+                ? translations.map(t => `<span style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-top: 4px;"><i class="fa-solid fa-language"></i> ${t.languages?.name || 'Idioma'}</span>`).join('')
+                : `<span style="display: inline-block; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 999px; font-size: 11px; margin-top: 4px;">Sin traducciones</span>`;
+
+            // Obtener el primer título traducido o resumen para subtítulo
+            const translationSubtitles = translations.map(t => t.title).filter(Boolean).join(' / ');
 
             return `
                 <div class="book-card" data-id="${book.id}">
@@ -127,9 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${coverImg}
                             <div class="book-card-info">
                                 <h3 class="book-card-title" title="${book.title || 'Sin título'}">${book.title || 'Sin título'}</h3>
-                                <div class="sub-text" style="font-size: 12px; color: #64748b; font-style: italic; margin-bottom: 4px;">${book.title_translation || ''}</div>
+                                <div class="sub-text" style="font-size: 12px; color: #64748b; font-style: italic; margin-bottom: 4px;">
+                                    ${translationSubtitles || 'Original en español'}
+                                </div>
                                 <div class="book-card-author"><i class="fa-solid fa-pen-nib" style="margin-right: 4px;"></i> ${authorName}</div>
-                                <span class="book-card-tag">${book.tag || 'none'}</span>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px;">
+                                    <span class="book-card-tag">${book.tag || 'none'}</span>
+                                    ${languagesBadges}
+                                </div>
                             </div>
                         </div>
                         <p class="book-card-desc">${book.description ? book.description : 'Sin descripción'}</p>
@@ -145,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const id = e.currentTarget.dataset.id;
-                if (confirm('¿Estás seguro de que deseas eliminar este libro de la historia?')) {
+                if (confirm('¿Estás seguro de que deseas eliminar este libro? Se eliminarán también todas sus traducciones asociadas.')) {
                     await deleteBook(id);
                 }
             });
@@ -161,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteBook(id) {
         try {
+            // El constraint ON DELETE CASCADE se encarga de borrar las filas en library_story_translations
             const { error } = await supabase
                 .from('library_stories')
                 .delete()
@@ -181,14 +217,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedTag = filterTagSelect ? filterTagSelect.value.toLowerCase() : '';
 
         const filtered = allBooks.filter(book => {
-            const matchesText = 
+            // Coincidencia con título base o autor
+            const matchesBase = 
                 (book.title && book.title.toLowerCase().includes(term)) ||
-                (book.title_translation && book.title_translation.toLowerCase().includes(term)) ||
-                ((book.author || book.autor) && (book.author || book.autor).toLowerCase().includes(term));
-            
+                (book.author && book.author.toLowerCase().includes(term));
+
+            // Coincidencia con cualquiera de los títulos traducidos
+            const translations = book.library_story_translations || [];
+            const matchesTranslations = translations.some(t => 
+                (t.title && t.title.toLowerCase().includes(term)) ||
+                (t.languages?.name && t.languages.name.toLowerCase().includes(term))
+            );
+
             const matchesTag = selectedTag === '' || (book.tag && book.tag.toLowerCase() === selectedTag);
 
-            return matchesText && matchesTag;
+            return (matchesBase || matchesTranslations) && matchesTag;
         });
 
         renderBooks(filtered);

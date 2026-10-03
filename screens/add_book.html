@@ -36,7 +36,6 @@
                 </ul>
             </li>
 
-            <!-- Restringido a Administrador -->
             <li class="has-submenu" data-role="admin-only">
                 <a href="#" class="submenu-toggle"><i class="fa-solid fa-users-gear"></i> <span class="nav-text">Admin</span> <i class="fa-solid fa-chevron-down toggle-icon"></i></a>
                 <ul class="submenu">
@@ -45,7 +44,6 @@
                 </ul>
             </li>
 
-            <!-- Restringido a Administrador -->
             <li data-role="admin-only"><a href="#"><i class="fa-solid fa-school"></i> <span class="nav-text">Colegios</span></a></li>
         </ul>
 
@@ -61,26 +59,22 @@
         <button id="mobileMenuBtn" class="mobile-menu-btn"><i class="fa-solid fa-bars"></i> Menú</button>
 
         <header>
-            <h1>CREADOR / EDITOR DE HISTORIAS Y LIBROS</h1>
+            <h1 id="pageTitle">CREADOR / EDITOR DE HISTORIAS Y LIBROS</h1>
         </header>
 
         <form id="bookForm" class="editor-grid-layout">
             <div class="editor-main-column">
                 
+                <!-- SECCIÓN 1: OBRA ORIGINAL EN ESPAÑOL -->
                 <section class="editor-card">
                     <div class="card-header-bar">
                         <span class="step-badge">1</span>
-                        <h2>Información general</h2>
+                        <h2>Obra Original (Español)</h2>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="bookTitle">Título de la historia</label>
-                            <input type="text" id="bookTitle" placeholder="Ej. La leyenda del guardián" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="bookTitleTranslation">Traducción del título</label>
-                            <input type="text" id="bookTitleTranslation" placeholder="Traducción en la lengua originaria">
+                            <label for="bookTitle">Título en Español</label>
+                            <input type="text" id="bookTitle" placeholder="Ej. Granada Hermosa" required>
                         </div>
 
                         <div class="form-group">
@@ -90,39 +84,55 @@
                                 <option value="leyenda">Leyenda</option>
                                 <option value="cuento">Cuento</option>
                                 <option value="tradicion">Tradición</option>
+                                <option value="historia">Historia</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="bookDesc">Descripción corta</label>
+                            <label for="bookDesc">Descripción / Resumen (Español)</label>
                             <textarea id="bookDesc" rows="2" placeholder="Breve resumen de la historia..." required></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="bookDescTranslation">Traducción de la descripción</label>
-                            <textarea id="bookDescTranslation" rows="2" placeholder="Traducción de la descripción..."></textarea>
+                            <label for="bookContent">Contenido Completo (Español)</label>
+                            <textarea id="bookContent" rows="6" placeholder="Escribe el texto completo de la lectura..." required></textarea>
                         </div>
                     </div>
                 </section>
 
+                <!-- SECCIÓN 2: TRADUCCIONES POR IDIOMA -->
                 <section class="editor-card">
                     <div class="card-header-bar">
                         <span class="step-badge">2</span>
-                        <h2>Contenido de la Lectura</h2>
+                        <h2>Traducciones en Lenguas Originarias</h2>
                     </div>
                     <div class="card-body">
-                        <div class="form-group">
-                            <label for="bookContent">Texto principal (Español u otro)</label>
-                            <textarea id="bookContent" rows="6" placeholder="Escribe o pega el contenido completo de la historia aquí..." required></textarea>
-                        </div>
+                        <div class="inner-tabs-layout">
+                            <div class="inner-tabs-menu" id="languagesTabMenu">
+                                <div class="inbox-loading">Cargando idiomas...</div>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="bookContentTranslation">Traducción del contenido principal</label>
-                            <textarea id="bookContentTranslation" rows="6" placeholder="Traducción completa de la historia..."></textarea>
+                            <div class="inner-tabs-content">
+                                <div class="form-group">
+                                    <label for="transTitle">Título en <span id="currentLangLabel">Lengua Originaria</span></label>
+                                    <input type="text" id="transTitle" placeholder="Ej. Tawanka Lihwan">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="transDesc">Descripción Traducida</label>
+                                    <textarea id="transDesc" rows="2" placeholder="Resumen en la lengua seleccionada..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="transContent">Contenido Traducido</label>
+                                    <textarea id="transContent" rows="6" placeholder="Texto completo en la lengua seleccionada..."></textarea>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
 
+                <!-- SECCIÓN 3: RECURSOS MULTIMEDIA -->
                 <section class="editor-card">
                     <div class="card-header-bar">
                         <span class="step-badge">3</span>
@@ -130,56 +140,50 @@
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="imageAssetFile">Imagen de Portada (`image_asset`)</label>
+                            <label for="imageAssetFile">Imagen de Portada (image_asset)</label>
                             <input type="file" id="imageAssetFile" class="file-input-custom" accept="image/*">
-                            <small style="display: block; color: var(--text-secondary); margin-top: 4px; font-size: 11px;">Sube la imagen principal que se mostrará en la tarjeta de la biblioteca.</small>
+                            
+                            <div id="currentCoverBox" class="media-preview-box">
+                                <p class="media-preview-label">Portada actual registrada:</p>
+                                <img id="currentCoverImg" src="" alt="Portada actual" class="book-card-cover">
+                            </div>
                         </div>
 
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label for="contentImageAssetFile">Imagen Interna de la Historia (`content_image_asset`)</label>
+                        <div class="form-group">
+                            <label for="contentImageAssetFile">Imagen Interna de la Historia (content_image_asset)</label>
                             <input type="file" id="contentImageAssetFile" class="file-input-custom" accept="image/*">
-                            <small style="display: block; color: var(--text-secondary); margin-top: 4px; font-size: 11px;">Sube la ilustración que aparecerá al interior de la lectura.</small>
+                            
+                            <div id="currentContentImageBox" class="media-preview-box">
+                                <p class="media-preview-label">Ilustración interna actual registrada:</p>
+                                <img id="currentContentImg" src="" alt="Imagen interna actual" class="media-content-img">
+                            </div>
                         </div>
                     </div>
                 </section>
 
             </div>
 
+            <!-- VISTA PREVIA LATERAL -->
             <div class="editor-sidebar-preview">
                 
                 <div class="preview-card-box">
-                    <div class="preview-title-bar" style="background: var(--sinskira-green);">Vista Previa - Original</div>
-                    <div class="preview-content-box" style="display: flex; flex-direction: column; gap: 12px; padding: 15px;">
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 3px;">Título Original</span>
-                            <h4 id="prevBookTitle" style="margin: 0; font-size: 15px; color: var(--sinskira-green);">Título de la historia</h4>
+                    <div class="preview-title-bar">Vista Previa - Español</div>
+                    <div class="preview-content-box">
+                        <div class="preview-badges">
+                            <span class="badge-pill" id="prevBookTag">none</span>
                         </div>
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 3px;">Descripción Original</span>
-                            <p id="prevBookDesc" style="margin: 0; font-size: 13px; color: var(--text-secondary);">Resumen de la lectura...</p>
-                        </div>
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--text-secondary); font-weight: bold; display: block; margin-bottom: 3px;">Lectura Original</span>
-                            <p id="prevBookContent" style="margin: 0; font-size: 12px; color: var(--text-primary); white-space: pre-wrap;">Contenido de la lectura...</p>
-                        </div>
+                        <h4 id="prevBookTitle">Título de la historia</h4>
+                        <p class="book-card-desc" id="prevBookDesc">Resumen de la lectura...</p>
+                        <p id="prevBookContent">Contenido de la lectura...</p>
                     </div>
                 </div>
 
                 <div class="preview-card-box">
-                    <div class="preview-title-bar" style="background: var(--sinskira-sage); color: var(--sinskira-green);">Vista Previa - Traducción</div>
-                    <div class="preview-content-box" style="display: flex; flex-direction: column; gap: 12px; padding: 15px;">
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--sinskira-green); font-weight: bold; display: block; margin-bottom: 3px;">Título Traducido</span>
-                            <h4 id="prevBookTitleTrans" style="margin: 0; font-size: 15px; color: var(--sinskira-green);">Traducción del título...</h4>
-                        </div>
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--sinskira-green); font-weight: bold; display: block; margin-bottom: 3px;">Descripción Traducida</span>
-                            <p id="prevBookDescTrans" style="margin: 0; font-size: 13px; color: var(--text-secondary); font-style: italic;">Traducción de la descripción...</p>
-                        </div>
-                        <div>
-                            <span style="font-size: 10px; text-transform: uppercase; color: var(--sinskira-green); font-weight: bold; display: block; margin-bottom: 3px;">Lectura Traducida</span>
-                            <p id="prevBookContentTrans" style="margin: 0; font-size: 12px; color: var(--text-primary); font-style: italic; white-space: pre-wrap;">Traducción del contenido...</p>
-                        </div>
+                    <div class="preview-title-bar" id="previewTransTitleBar">Vista Previa - Traducción</div>
+                    <div class="preview-content-box">
+                        <h4 id="prevBookTitleTrans">Sin traducción</h4>
+                        <p class="book-card-desc" id="prevBookDescTrans">Sin traducción...</p>
+                        <p id="prevBookContentTrans">Sin traducción...</p>
                     </div>
                 </div>
 
