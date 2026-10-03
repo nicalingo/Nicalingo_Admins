@@ -1,9 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL = 'https://xrisuvdfdnpzudbaqzbv.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Inicialización explícita para Publishable Key
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true
+    },
+    global: {
+        headers: {
+            apikey: SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        }
+    }
+})
 
 // Helper visual Coco Ups Modal
 function showCocoUpsModal(errorMessage) {
@@ -19,15 +31,11 @@ function showCocoUpsModal(errorMessage) {
         `;
         modal.innerHTML = `
             <div style="background: #ffffff; padding: 25px 30px; border-radius: 16px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 30px rgba(0,0,0,0.25); border: 2px solid #fee2e2;">
-                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" style="width: 100px; height: auto; margin-bottom: 15px; animation: cocoBounce 1s infinite alternate ease-in-out;">
-                <h3 style="margin: 0 0 10px 0; color: #dc2626; font-size: 20px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
-                <p id="cocoUpsMsgText" style="font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 20px 0; word-break: break-word;"></p>
-                <button type="button" id="btnCocoUpsClose" style="background: #dc2626; color: white; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s;">Entendido</button>
+                <img src="../assets/imagenes/coco/coco ups.png" alt="Coco Ups" class="coco-bounce">
+                <h3 style="margin: 10px 0; color: #dc2626; font-size: 18px; font-weight: 700;">¡Ups! Ha ocurrido un error</h3>
+                <p id="cocoUpsMsgText" style="font-size: 14px; color: #526360; line-height: 1.5; margin-bottom: 20px; word-break: break-word;"></p>
+                <button type="button" id="btnCocoUpsClose" class="btn-guardar-main" style="padding: 10px 24px; font-size: 14px;">Entendido</button>
             </div>
-            <style>
-                @keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
-                @keyframes cocoBounce { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
-            </style>
         `;
         document.body.appendChild(modal);
         document.getElementById('btnCocoUpsClose').addEventListener('click', () => {
@@ -102,9 +110,14 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error al cargar libros:', err);
             if (loadingMessage) {
-                loadingMessage.innerHTML = '<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error al conectar con la base de datos.</span>';
+                loadingMessage.innerHTML = `<span style="color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error al conectar con la base de datos: ${err.message || 'Error'}</span>`;
+                loadingMessage.style.display = 'block';
             }
             showCocoUpsModal('No se pudieron obtener las historias de la biblioteca: ' + err.message);
+        } finally {
+            if (allBooks.length > 0 && loadingMessage) {
+                loadingMessage.style.display = 'none';
+            }
         }
     }
 
@@ -142,12 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const authorName = book.author || 'Autor desconocido';
             const translations = book.library_story_translations || [];
 
-            // Construir badges de los idiomas disponibles
+            // Badges con las lenguas disponibles
             const languagesBadges = translations.length > 0
-                ? translations.map(t => `<span style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-top: 4px;"><i class="fa-solid fa-language"></i> ${t.languages?.name || 'Idioma'}</span>`).join('')
-                : `<span style="display: inline-block; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 999px; font-size: 11px; margin-top: 4px;">Sin traducciones</span>`;
+                ? translations.map(t => `<span class="badge-pill"><i class="fa-solid fa-language"></i> ${t.languages?.name || 'Idioma'}</span>`).join('')
+                : `<span class="badge-pill">Sin traducciones</span>`;
 
-            // Obtener el primer título traducido o resumen para subtítulo
+            // Subtítulos traducidos
             const translationSubtitles = translations.map(t => t.title).filter(Boolean).join(' / ');
 
             return `
@@ -157,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${coverImg}
                             <div class="book-card-info">
                                 <h3 class="book-card-title" title="${book.title || 'Sin título'}">${book.title || 'Sin título'}</h3>
-                                <div class="sub-text" style="font-size: 12px; color: #64748b; font-style: italic; margin-bottom: 4px;">
+                                <div class="sub-text" style="font-size: 12px; color: var(--text-secondary); font-style: italic; margin-bottom: 4px;">
                                     ${translationSubtitles || 'Original en español'}
                                 </div>
                                 <div class="book-card-author"><i class="fa-solid fa-pen-nib" style="margin-right: 4px;"></i> ${authorName}</div>
@@ -170,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="book-card-desc">${book.description ? book.description : 'Sin descripción'}</p>
                     </div>
                     <div class="book-card-actions">
-                        <button class="btn-action btn-edit" data-id="${book.id}" title="Editar" style="background: #2563eb; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-action btn-delete" data-id="${book.id}" title="Eliminar" style="background: #dc2626; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer;"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn-action btn-edit" data-id="${book.id}" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-action btn-delete" data-id="${book.id}" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             `;
@@ -196,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function deleteBook(id) {
         try {
-            // El constraint ON DELETE CASCADE se encarga de borrar las filas en library_story_translations
             const { error } = await supabase
                 .from('library_stories')
                 .delete()
@@ -217,12 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedTag = filterTagSelect ? filterTagSelect.value.toLowerCase() : '';
 
         const filtered = allBooks.filter(book => {
-            // Coincidencia con título base o autor
             const matchesBase = 
                 (book.title && book.title.toLowerCase().includes(term)) ||
                 (book.author && book.author.toLowerCase().includes(term));
 
-            // Coincidencia con cualquiera de los títulos traducidos
             const translations = book.library_story_translations || [];
             const matchesTranslations = translations.some(t => 
                 (t.title && t.title.toLowerCase().includes(term)) ||

@@ -1,9 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const SUPABASE_URL = 'https://xrisuvdfdnpzudbaqzbv.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Inicialización explícita para Publishable Key
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true
+    },
+    global: {
+        headers: {
+            apikey: SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+        }
+    }
+})
 
 // Modal de alerta Coco Ups
 function showCocoUpsModal(errorMessage) {
@@ -37,7 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bookForm = document.getElementById('bookForm');
     const btnLogout = document.getElementById('btnLogout');
 
-    // Inputs obra base (Español)
+    // Inputs de la obra en español
     const bookTitleInput = document.getElementById('bookTitle');
     const bookTagSelect = document.getElementById('bookTag');
     const bookDescInput = document.getElementById('bookDesc');
@@ -62,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const prevBookDescTrans = document.getElementById('prevBookDescTrans');
     const prevBookContentTrans = document.getElementById('prevBookContentTrans');
 
-    // Contenedores de imágenes preexistentes
+    // Contenedores para imágenes preexistentes
     const currentCoverBox = document.getElementById('currentCoverBox');
     const currentCoverImg = document.getElementById('currentCoverImg');
     const currentContentImageBox = document.getElementById('currentContentImageBox');
@@ -247,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (bookDescInput) { bookDescInput.value = book.description || ''; prevBookDesc.textContent = book.description || 'Resumen de la lectura...'; }
             if (bookContentInput) { bookContentInput.value = book.content || ''; prevBookContent.textContent = book.content || 'Contenido de la lectura...'; }
 
-            // Mostrar miniaturas de las imágenes guardadas si existen
+            // Mostrar miniaturas de las imágenes guardadas
             if (book.image_asset && currentCoverBox && currentCoverImg) {
                 currentCoverImg.src = book.image_asset;
                 currentCoverBox.style.display = 'block';
@@ -301,7 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const authorNickname = (profileData && profileData.nickname) ? profileData.nickname : (user.email || 'Administrador');
 
-                // Archivos nuevos seleccionados
+                // Manejo de nuevas imágenes subidas
                 const imageFile = document.getElementById('imageAssetFile')?.files[0];
                 const contentImageFile = document.getElementById('contentImageAssetFile')?.files[0];
 
@@ -336,7 +348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     author: authorNickname
                 };
 
-                // Si no se seleccionó un archivo nuevo, no se añade al payload para no sobreescribir la imagen existente
+                // Preserva imágenes si no se subió un archivo nuevo
                 if (imageAssetUrl !== undefined) bookPayload.image_asset = imageAssetUrl;
                 if (contentImageAssetUrl !== undefined) bookPayload.content_image_asset = contentImageAssetUrl;
 
@@ -359,7 +371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     storyId = insertedBook.id;
                 }
 
-                // Guardar las traducciones que tengan contenido
+                // Upsert de traducciones con contenido
                 const translationsToUpsert = [];
                 for (const [langId, tData] of Object.entries(translationsData)) {
                     if (tData.title && tData.content) {
