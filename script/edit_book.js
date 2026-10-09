@@ -3,17 +3,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SUPABASE_URL = 'https://xrisuvdfdnpzudbaqzbv.supabase.co'
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_zgaMHL76OEA5COJD3QleYg_s799Azre'
 
-// Inicialización explícita para Publishable Key
+// Inicialización estándar con Publishable Key y persistencia de sesión
 const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
         persistSession: true,
         autoRefreshToken: true
-    },
-    global: {
-        headers: {
-            apikey: SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
-        }
     }
 })
 
